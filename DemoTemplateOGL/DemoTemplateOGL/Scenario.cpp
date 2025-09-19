@@ -154,6 +154,15 @@ void Scenario::InitGraph(Model *main) {
 	model->setNextTranslate(model->getTranslate());
 	model->setScale(&scale);
 	ourModel.emplace_back(model);
+
+	//AQUI INICIO LA PUTA PRUEBA
+	Model* calaca = new Model("models/Calaca/Calaca.obj", main->cameraDetails);
+	translate = glm::vec3(10.0f, terreno->Superficie(10.0f, 20.0f), 20.0f);
+	scale = glm::vec3(0.05f, 0.05f, 0.05f);
+	calaca->setTranslate(&translate);
+	calaca->setNextTranslate(&translate);
+	calaca->setScale(&scale);
+	ourModel.emplace_back(calaca);
 	
 
 	inicializaBillboards();
