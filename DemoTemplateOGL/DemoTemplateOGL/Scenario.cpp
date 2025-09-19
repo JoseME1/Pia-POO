@@ -38,13 +38,6 @@ void Scenario::InitGraph(Model *main) {
 	// -----------
 	ourModel.emplace_back(main);
 	Model* model;
-	model = new Model("models/fogata/fogata.obj", main->cameraDetails);
-	translate = glm::vec3(15.0f, 15.0f, 25.0f);
-	model->setTranslate(&translate);
-	model->setNextTranslate(&translate);
-	rotation = glm::vec3(1.0f, 0.0f, 0.0f); //rotation X
-	model->setNextRotX(0); // 45� rotation
-	ourModel.emplace_back(model);
 
 	Model *pez = new Model("models/pez/pez.obj", main->cameraDetails);
 	translate = glm::vec3(0.0f, terreno->Superficie(0.0f, 50.0f), 50.0f);
@@ -135,33 +128,17 @@ void Scenario::InitGraph(Model *main) {
 	*model->getBonesInfo() = *silly->getBonesInfo();
 	model->setAnimator(silly->getAnimator());
 
-	//	model = new Model("models/IronMan.obj", main->cameraDetails);
-//	translate = glm::vec3(0.0f, 20.0f, 30.0f);
-//	scale = glm::vec3(0.025f, 0.025f, 0.025f);	// it's a bit too big for our scene, so scale it down
-//	model->setScale(&scale);
-//	model->setTranslate(&translate);
-//	ourModel.emplace_back(model);
-	model = new Model("models/backpack/backpack.obj", main->cameraDetails, false, false);
-	translate = glm::vec3(20.0f, terreno->Superficie(20.0f, 0.0f) + 2, 0.0f);
-	scale = glm::vec3(1.0f, 1.0f, 1.0f);	// it's a bit too big for our scene, so scale it down
-	model->setTranslate(&translate);
-	model->setNextTranslate(&translate);
-	model->setScale(&scale);
-	ourModel.emplace_back(model);
-	model->lightColor = glm::vec3(10,0,0);
-	model = new CollitionBox(60.0f, 15.0f, 10.0f, 10, 10, 10, main->cameraDetails);
-	scale = glm::vec3(1.0f, 1.0f, 1.0f);	// it's a bit too big for our scene, so scale it down
-	model->setNextTranslate(model->getTranslate());
-	model->setScale(&scale);
-	ourModel.emplace_back(model);
 
 	//AQUI INICIO LA PUTA PRUEBA
-	Model* calaca = new Model("models/Calaca/Calaca.obj", main->cameraDetails);
-	translate = glm::vec3(10.0f, terreno->Superficie(10.0f, 20.0f), 20.0f);
-	scale = glm::vec3(0.05f, 0.05f, 0.05f);
+	Model* calaca = new Model("models/Calaca/Calaca.fbx", main->cameraDetails);
+	translate = glm::vec3(10.0f, terreno->Superficie(19.0f, 6.0f), 12.0f); // Ajusta la posición según tu escena
+	scale = glm::vec3(0.02f, 0.02f, 0.02f); // Ajusta la escala si el modelo es muy grande o pequeño
 	calaca->setTranslate(&translate);
 	calaca->setNextTranslate(&translate);
 	calaca->setScale(&scale);
+	//AQUI INTENTO ROTARLO PARA QUE NO ESTE BOCA ABAJO
+	calaca->setRotX(-90.0f);
+	calaca->setNextRotX(-90.0f);
 	ourModel.emplace_back(calaca);
 	
 
