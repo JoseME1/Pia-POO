@@ -22,6 +22,14 @@ Scenario::Scenario(Model *camIni) {
 void Scenario::InitGraph(Model *main) {
     float matAmbient[] = { 1,1,1,1 };
 	float matDiff[] = { 1,1,1,1 };
+	//Defino las escalas de cada eje por separado
+	float escalaY;
+	float escalaX;
+	float escalaZ;
+	//Defino las posiciones de cada eje por separado
+	float posX;
+	float posY;
+	float posZ;
 	angulo = 0;
 	camara = main;
 	//creamos el objeto skydome
@@ -39,6 +47,7 @@ void Scenario::InitGraph(Model *main) {
 	ourModel.emplace_back(main);
 	Model* model;
 
+	/*ESTO CARGA AL PEZ Y LO CLONA
 	Model *pez = new Model("models/pez/pez.obj", main->cameraDetails);
 	translate = glm::vec3(0.0f, terreno->Superficie(0.0f, 50.0f), 50.0f);
 	pez->setNextTranslate(&translate);
@@ -60,8 +69,9 @@ void Scenario::InitGraph(Model *main) {
 	model->setTranslate(&m.translate);
 	model->setNextTranslate(&m.translate);
 	m.hitbox = model; // Le decimos al ultimo ModelAttribute que tiene un hitbox asignado
-	pez->getModelAttributes()->push_back(m);
+	pez->getModelAttributes()->push_back(m);*/
 
+	/*ESTO CARGA DANCING VAMPIRE CON ANIMACIONES
 	model = new Model("models/dancing_vampire/dancing_vampire.dae", main->cameraDetails);
 	translate = glm::vec3(0.0f, terreno->Superficie(0.0f, 60.0f), 60.0f);
 	scale = glm::vec3(0.02f, 0.02f, 0.02f);	// it's a bit too big for our scene, so scale it down
@@ -81,6 +91,7 @@ void Scenario::InitGraph(Model *main) {
 		ERRORL("Could not load animation!", "ANIMACION");
 	}
 
+	//ESTO CARGA SILLY DANCING Y LO CLONA CON ANIMACIONES
 	Model* silly = new Model("models/Silly_Dancing/Silly_Dancing.fbx", main->cameraDetails);
 	translate = glm::vec3(10.0f, terreno->Superficie(10.0f, 60.0f) , 60.0f);
 	scale = glm::vec3(0.02f, 0.02f, 0.02f);	// it's a bit too big for our scene, so scale it down
@@ -126,13 +137,17 @@ void Scenario::InitGraph(Model *main) {
 	model->getBonesInfo()->clear();
 	*model->GetBoneInfoMap() = *silly->GetBoneInfoMap();
 	*model->getBonesInfo() = *silly->getBonesInfo();
-	model->setAnimator(silly->getAnimator());
+	model->setAnimator(silly->getAnimator());*/
 
 
 	//AQUI INICIO LA PUTA PRUEBA
 	Model* calaca = new Model("models/Calaca/Calaca.fbx", main->cameraDetails);
-	translate = glm::vec3(10.0f, terreno->Superficie(19.0f, 6.0f), 12.0f); // Ajusta la posición según tu escena
-	scale = glm::vec3(0.02f, 0.02f, 0.02f); // Ajusta la escala si el modelo es muy grande o pequeño
+	posX = 10.0f;
+	posZ = 12.0f;
+	posY = terreno->Superficie(posX, posZ);
+	translate = glm::vec3(posX,posY,posZ); 
+	escalaX = escalaY = escalaZ = 0.02f; //Ajusto el valor de las escalas, normalmente todos iguales
+	scale = glm::vec3(escalaX, escalaY, escalaZ); //Paso como parametro las escalas hechas variable en lugar de asignarlas directamente
 	calaca->setTranslate(&translate);
 	calaca->setNextTranslate(&translate);
 	calaca->setScale(&scale);
@@ -140,8 +155,26 @@ void Scenario::InitGraph(Model *main) {
 	calaca->setRotX(-90.0f);
 	calaca->setNextRotX(-90.0f);
 	ourModel.emplace_back(calaca);
-	
 
+	//CARGAMOS LA MONEDA (Esto tiene corregido el tema de aparecer en la superficie del terreno)
+	Model* moneda = new Model("models/Moneda/Moneda.fbx", main->cameraDetails);
+	escalaY=escalaX=escalaZ = 4.0f;
+	scale = glm::vec3(escalaX, escalaY, escalaY);
+	float alturaMoneda = 1.0f * escalaY; // Altura real del modelo en Blender es 1.0, si fuera 2.0 se pondria 2.0, etc
+	posX = 47.0f;
+	posZ = 24.0f;
+	//IMPORTANTE ESTABLECER EL VALOR DE POSX Y POSZ ANTES DE CALCULAR POSY
+	//Si quiero evitar hacer lo de abajo, podria cambiar el origen del modelo en Blender
+	posY = terreno->Superficie(posX, posZ)+(alturaMoneda/2.0f); //Dividimos entre 2 la altura porque el origen del modelo esta en el centro
+	/*Aqui se hacen unos malabares con la escala xd*/
+	translate = glm::vec3(posX, posY, posZ);
+	moneda->setTranslate(&translate);
+	moneda->setNextTranslate(&translate);
+	moneda->setScale(&scale);
+	ourModel.emplace_back(moneda);
+
+
+	//CARGA BILLBOARDS
 	inicializaBillboards();
 	std::wstring prueba(L"Puto el que lo lea");
 	ourText.emplace_back(new Texto(prueba, 20, 0, 0, SCR_HEIGHT, 0, camara));

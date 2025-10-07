@@ -109,19 +109,22 @@ int main(int argc, char** argv){
 }
 
 int startGameEngine(void *ptrMsg){
+    //ESTO CARGA EL MODELO DEL PROTAGONISTA
     // Main character with it's camera
     glm::vec3 translate, scale, v(0, 0, -1);
     translate = glm::vec3(5.0f, 10.0f, -5.0f);
     //5, ye - 1,-5
     //MainModel *model = new MainModel(hWnd, "models/Cube.obj", translate);
     Camera* camera = Camera::getInstance();
-    Model* model = new Model("models/BaseSpiderman/BaseSpiderman.obj", translate, camera);
+    Model* model = new Model("models/Calaca/Calaca.fbx", translate, camera);
     model->setTranslate(&translate);
     camera->setFront(v);
     camera->setCharacterHeight(4.0);
-    scale = glm::vec3(1.0f, 1.0f, 1.0f);	// it's a bit too big for our scene, so scale it down
+    scale = glm::vec3(0.02f, 0.02f, 0.02f);	// it's a bit too big for our scene, so scale it down
     model->setScale(&scale);
     model->setTranslate(&translate);
+    model->setRotX(-90.0f);
+	model->setNextRotX(-90.0f); //Ya carga el modelo "derecho" pero ahora rota al mover la camara
 
     OGLobj = new Scenario(model); // Creamos nuestra escena con esa posicion de inicio
     translate = glm::vec3(5.0f, OGLobj->getTerreno()->Superficie(5.0, -5.0), -5.0f);
