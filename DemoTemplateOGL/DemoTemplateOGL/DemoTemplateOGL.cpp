@@ -120,11 +120,10 @@ int startGameEngine(void *ptrMsg){
     model->setTranslate(&translate);
     camera->setFront(v);
     camera->setCharacterHeight(4.0);
-    scale = glm::vec3(0.02f, 0.02f, 0.02f);	// it's a bit too big for our scene, so scale it down
+    scale = glm::vec3(4.0f, 4.0f, 4.0f);	// it's a bit too big for our scene, so scale it down
     model->setScale(&scale);
     model->setTranslate(&translate);
-    model->setRotX(-90.0f);
-	model->setNextRotX(-90.0f); //Ya carga el modelo "derecho" pero ahora rota al mover la camara
+    
 
     OGLobj = new Scenario(model); // Creamos nuestra escena con esa posicion de inicio
     translate = glm::vec3(5.0f, OGLobj->getTerreno()->Superficie(5.0, -5.0), -5.0f);

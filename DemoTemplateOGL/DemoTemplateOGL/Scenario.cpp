@@ -139,27 +139,10 @@ void Scenario::InitGraph(Model *main) {
 	*model->getBonesInfo() = *silly->getBonesInfo();
 	model->setAnimator(silly->getAnimator());*/
 
-
-	//AQUI INICIO LA PUTA PRUEBA
-	Model* calaca = new Model("models/Calaca/Calaca.fbx", main->cameraDetails);
-	posX = 10.0f;
-	posZ = 12.0f;
-	posY = terreno->Superficie(posX, posZ);
-	translate = glm::vec3(posX,posY,posZ); 
-	escalaX = escalaY = escalaZ = 0.02f; //Ajusto el valor de las escalas, normalmente todos iguales
-	scale = glm::vec3(escalaX, escalaY, escalaZ); //Paso como parametro las escalas hechas variable en lugar de asignarlas directamente
-	calaca->setTranslate(&translate);
-	calaca->setNextTranslate(&translate);
-	calaca->setScale(&scale);
-	//AQUI INTENTO ROTARLO PARA QUE NO ESTE BOCA ABAJO
-	calaca->setRotX(-90.0f);
-	calaca->setNextRotX(-90.0f);
-	ourModel.emplace_back(calaca);
-
 	//CARGAMOS LA MONEDA (Esto tiene corregido el tema de aparecer en la superficie del terreno)
 	Model* moneda = new Model("models/Moneda/Moneda.fbx", main->cameraDetails);
 	escalaY=escalaX=escalaZ = 4.0f;
-	scale = glm::vec3(escalaX, escalaY, escalaY);
+	scale = glm::vec3(escalaX, escalaY, escalaZ);
 	float alturaMoneda = 1.0f * escalaY; // Altura real del modelo en Blender es 1.0, si fuera 2.0 se pondria 2.0, etc
 	posX = 47.0f;
 	posZ = 24.0f;
@@ -173,6 +156,57 @@ void Scenario::InitGraph(Model *main) {
 	moneda->setScale(&scale);
 	ourModel.emplace_back(moneda);
 
+	//CARGAMOS EL VOCHO
+	Model* vocho = new Model("models/Vocho/vocho.fbx", main->cameraDetails);
+	escalaX = escalaY = escalaZ = 0.5f;
+	scale = glm::vec3(escalaX, escalaY, escalaZ);
+	posX = 30.0f;
+	posZ = 30.0f;
+	posY = terreno->Superficie(posX, posZ);
+	translate = glm::vec3(posX, posY, posZ);
+	vocho->setTranslate(&translate);
+	vocho->setNextTranslate(&translate);
+	vocho->setScale(&scale);
+	ourModel.emplace_back(vocho);
+	
+	//CARGAMOS EL CARRO
+	Model* carro = new Model("models/Carro/carro.fbx", main->cameraDetails);
+	escalaX = escalaY = escalaZ = 3.0f;
+	scale = glm::vec3(escalaX, escalaY, escalaZ);
+	posX = 40.0f;
+	posZ = 40.0f;
+	posY = terreno->Superficie(posX, posZ);
+	translate = glm::vec3(posX, posY, posZ);
+	carro->setTranslate(&translate);
+	carro->setNextTranslate(&translate);
+	carro->setScale(&scale);
+	ourModel.emplace_back(carro);
+
+	//CARGAMOS EL PERRO
+	Model* perro = new Model("models/Perro/perro.fbx", main->cameraDetails);
+	escalaX = escalaY = escalaZ = 0.5f;
+	scale = glm::vec3(escalaX, escalaY, escalaZ);
+	posX = 50.0f;
+	posZ = 50.0f;
+	posY = terreno->Superficie(posX, posZ);
+	translate = glm::vec3(posX, posY, posZ);
+	perro->setTranslate(&translate);
+	perro->setNextTranslate(&translate);
+	perro->setScale(&scale);
+	ourModel.emplace_back(perro);
+
+	//CARGAMOS EL BOTE DE BASURA
+	Model* basura = new Model("models/Basura/basura.fbx", main->cameraDetails);
+	escalaX = escalaY = escalaZ = 2.0f;
+	scale = glm::vec3(escalaX, escalaY, escalaZ);
+	posX = 60.0f;
+	posZ = 60.0f;
+	posY = terreno->Superficie(posX, posZ);
+	translate = glm::vec3(posX, posY, posZ);
+	basura->setTranslate(&translate);
+	basura->setNextTranslate(&translate);
+	basura->setScale(&scale);
+	ourModel.emplace_back(basura);
 
 	//CARGA BILLBOARDS
 	inicializaBillboards();
