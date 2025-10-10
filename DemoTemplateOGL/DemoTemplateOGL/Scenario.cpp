@@ -183,8 +183,8 @@ void Scenario::InitGraph(Model *main) {
 	ourModel.emplace_back(carro);
 
 	//CARGAMOS EL PERRO
-	Model* perro = new Model("models/Perro/perro.fbx", main->cameraDetails);
-	escalaX = escalaY = escalaZ = 0.5f;
+	Model* perro = new Model("models/Perro/perroIdle.fbx", main->cameraDetails);
+	escalaX = escalaY = escalaZ = 0.04f;
 	scale = glm::vec3(escalaX, escalaY, escalaZ);
 	posX = 50.0f;
 	posZ = 50.0f;
@@ -194,6 +194,16 @@ void Scenario::InitGraph(Model *main) {
 	perro->setNextTranslate(&translate);
 	perro->setScale(&scale);
 	ourModel.emplace_back(perro);
+	try {
+		std::vector<Animation> animations = Animation::loadAllAnimations("models/Perro/perroIdle.fbx", perro->GetBoneInfoMap(), perro->getBonesInfo(), perro->GetBoneCount());
+		for (Animation animation : animations)
+			perro->setAnimator(Animator(animation));
+		perro->setAnimation(0);
+	}
+	catch (...) {
+		ERRORL("Could not load animation!", "ANIMACION");
+	}
+	
 
 	//CARGAMOS EL BOTE DE BASURA
 	Model* basura = new Model("models/Basura/basura.fbx", main->cameraDetails);

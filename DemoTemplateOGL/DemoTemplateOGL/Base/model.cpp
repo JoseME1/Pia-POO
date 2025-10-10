@@ -778,3 +778,4 @@ bool Model::colisionaCon(ModelAttributes& objeto0, ModelAttributes& objeto, glm:
 void Model::setCleanTextures(bool flag){
     cleanTextures = flag;
 }
+

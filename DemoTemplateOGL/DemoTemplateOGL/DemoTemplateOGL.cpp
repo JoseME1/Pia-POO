@@ -108,21 +108,30 @@ int main(int argc, char** argv){
     return startGameEngine(ptrMsg);
 }
 
+
 int startGameEngine(void *ptrMsg){
     //ESTO CARGA EL MODELO DEL PROTAGONISTA
     // Main character with it's camera
     glm::vec3 translate, scale, v(0, 0, -1);
     translate = glm::vec3(5.0f, 10.0f, -5.0f);
     //5, ye - 1,-5
-    //MainModel *model = new MainModel(hWnd, "models/Cube.obj", translate);
     Camera* camera = Camera::getInstance();
-    Model* model = new Model("models/Calaca/Calaca.fbx", translate, camera);
+    Model* model = new Model("models/Calaca/CalacaWalking.fbx", translate, camera);
     model->setTranslate(&translate);
     camera->setFront(v);
     camera->setCharacterHeight(4.0);
-    scale = glm::vec3(4.0f, 4.0f, 4.0f);	// it's a bit too big for our scene, so scale it down
+    scale = glm::vec3(0.03f, 0.03f,0.03f);	// it's a bit too big for our scene, so scale it down
     model->setScale(&scale);
     model->setTranslate(&translate);
+    try {
+        std::vector<Animation> animations = Animation::loadAllAnimations("models/Calaca/CalacaWalking.fbx", model->GetBoneInfoMap(), model->getBonesInfo(), model->GetBoneCount());
+        for (Animation animation : animations)
+            model->setAnimator(Animator(animation));
+        model->setAnimation(0);
+    }
+    catch (...) {
+        ERRORL("Could not load animation!", "ANIMACION");
+    }
     
 
     OGLobj = new Scenario(model); // Creamos nuestra escena con esa posicion de inicio

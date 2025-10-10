@@ -114,6 +114,7 @@ public:
     void setCleanTextures(bool flag);
     std::vector<ModelAttributes>* getModelAttributes();
     virtual ModelCollider update(float terrainY, std::vector<Model*>& models, glm::vec3 &ejeColision, bool gravityEnable = false);
+    
 private:
     void loadMaterial(vector<Material> &m, aiMaterial* mat);
     // loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
