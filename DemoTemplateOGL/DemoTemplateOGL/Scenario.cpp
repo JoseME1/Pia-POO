@@ -33,9 +33,9 @@ void Scenario::InitGraph(Model *main) {
 	angulo = 0;
 	camara = main;
 	//creamos el objeto skydome
-	sky = new SkyDome(32, 32, 20, (WCHAR*)L"skydome/earth.jpg", main->cameraDetails);
+	sky = new SkyDome(32, 32, 20, (WCHAR*)L"skydome/earth3.png", main->cameraDetails);
 	//creamos el terreno
-	terreno = new Terreno((WCHAR*)L"skydome/terreno.jpg", (WCHAR*)L"skydome/texterr2.jpg", 400, 400, main->cameraDetails);
+	terreno = new Terreno((WCHAR*)L"skydome/terreno2.jpg", (WCHAR*)L"skydome/texterr.jpg", 400, 400, main->cameraDetails);
 	water = new Water((WCHAR*)L"textures/terreno.bmp", (WCHAR*)L"textures/water.bmp", 20, 20, camara->cameraDetails);
 	glm::vec3 translate;
 	glm::vec3 scale;
