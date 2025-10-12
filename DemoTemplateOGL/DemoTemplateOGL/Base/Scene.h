@@ -28,7 +28,7 @@ class Scene {
 		};
 
 		virtual int update(){
-            float angulo = getAngulo() + 1.5 * gameTime.deltaTime / 100;
+            float angulo = getAngulo() + 0.05 * gameTime.deltaTime / 100;
             angulo = angulo >= 360 ? angulo - 360.0 : angulo;
             setAngulo(angulo);
             getSky()->setRotY(angulo);

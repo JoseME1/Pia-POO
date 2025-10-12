@@ -16,9 +16,9 @@ class Water : public Terreno {
 private:
 double WATER_PI_FACTOR = 2.0f * M_PI;
 size_t mapSizeX;
-static constexpr float waveSpeed = 0.1f;
-static constexpr float waveAmplitude = 0.5f;
-static constexpr float waveFrequency = 0.5f;
+static constexpr float waveSpeed = 0.01f;
+static constexpr float waveAmplitude = 0.02f;
+static constexpr float waveFrequency = 0.1f;
 void reloadData(vector<Vertex>& vertices) {
     static float time = 0.f;
     time += waveSpeed;

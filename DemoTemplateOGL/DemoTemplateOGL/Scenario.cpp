@@ -35,13 +35,15 @@ void Scenario::InitGraph(Model *main) {
 	//creamos el objeto skydome
 	sky = new SkyDome(32, 32, 20, (WCHAR*)L"skydome/earth3.png", main->cameraDetails);
 	//creamos el terreno
-	terreno = new Terreno((WCHAR*)L"skydome/terreno2.jpg", (WCHAR*)L"skydome/texterr.jpg", 400, 400, main->cameraDetails);
-	water = new Water((WCHAR*)L"textures/terreno.bmp", (WCHAR*)L"textures/water.bmp", 20, 20, camara->cameraDetails);
+	terreno = new Terreno((WCHAR*)L"skydome/terreno2.jpg", (WCHAR*)L"skydome/texterr.jpg", 200, 200, main->cameraDetails);
+	water = new Water((WCHAR*)L"textures/terreno.bmp", (WCHAR*)L"textures/water.bmp", 5, 5, camara->cameraDetails);
 	glm::vec3 translate;
 	glm::vec3 scale;
 	glm::vec3 rotation;
-	translate = glm::vec3(0.0f, 20.0f, 30.0f);
+	translate = glm::vec3(80.0f, 1.0f, 40.0f);
 	water->setTranslate(&translate);
+	scale = glm::vec3(1.0f, 1.0f, 1.0f);
+	water->setScale(&scale);
 	// load models
 	// -----------
 	ourModel.emplace_back(main);
@@ -144,8 +146,8 @@ void Scenario::InitGraph(Model *main) {
 	escalaY=escalaX=escalaZ = 4.0f;
 	scale = glm::vec3(escalaX, escalaY, escalaZ);
 	float alturaMoneda = 1.0f * escalaY; // Altura real del modelo en Blender es 1.0, si fuera 2.0 se pondria 2.0, etc
-	posX = 47.0f;
-	posZ = 24.0f;
+	posX = 50.0f;
+	posZ = -10.0f;
 	//IMPORTANTE ESTABLECER EL VALOR DE POSX Y POSZ ANTES DE CALCULAR POSY
 	//Si quiero evitar hacer lo de abajo, podria cambiar el origen del modelo en Blender
 	posY = terreno->Superficie(posX, posZ)+(alturaMoneda/2.0f); //Dividimos entre 2 la altura porque el origen del modelo esta en el centro
@@ -161,7 +163,7 @@ void Scenario::InitGraph(Model *main) {
 	escalaX = escalaY = escalaZ = 0.5f;
 	scale = glm::vec3(escalaX, escalaY, escalaZ);
 	posX = 30.0f;
-	posZ = 30.0f;
+	posZ = -10.0f;
 	posY = terreno->Superficie(posX, posZ);
 	translate = glm::vec3(posX, posY, posZ);
 	vocho->setTranslate(&translate);
@@ -173,8 +175,8 @@ void Scenario::InitGraph(Model *main) {
 	Model* carro = new Model("models/Carro/carro.fbx", main->cameraDetails);
 	escalaX = escalaY = escalaZ = 3.0f;
 	scale = glm::vec3(escalaX, escalaY, escalaZ);
-	posX = 40.0f;
-	posZ = 40.0f;
+	posX = 20.0f;
+	posZ = -10.0f;
 	posY = terreno->Superficie(posX, posZ);
 	translate = glm::vec3(posX, posY, posZ);
 	carro->setTranslate(&translate);
@@ -186,8 +188,8 @@ void Scenario::InitGraph(Model *main) {
 	Model* perro = new Model("models/Perro/perroIdle.fbx", main->cameraDetails);
 	escalaX = escalaY = escalaZ = 0.04f;
 	scale = glm::vec3(escalaX, escalaY, escalaZ);
-	posX = 50.0f;
-	posZ = 50.0f;
+	posX = 10.0f;
+	posZ = -10.0f;
 	posY = terreno->Superficie(posX, posZ);
 	translate = glm::vec3(posX, posY, posZ);
 	perro->setTranslate(&translate);
@@ -209,8 +211,8 @@ void Scenario::InitGraph(Model *main) {
 	Model* basura = new Model("models/Basura/basura.fbx", main->cameraDetails);
 	escalaX = escalaY = escalaZ = 2.0f;
 	scale = glm::vec3(escalaX, escalaY, escalaZ);
-	posX = 60.0f;
-	posZ = 60.0f;
+	posX = 0.0f;
+	posZ = -10.0f;
 	posY = terreno->Superficie(posX, posZ);
 	translate = glm::vec3(posX, posY, posZ);
 	basura->setTranslate(&translate);
@@ -218,13 +220,153 @@ void Scenario::InitGraph(Model *main) {
 	basura->setScale(&scale);
 	ourModel.emplace_back(basura);
 
+	//CARGAMOS LA CASA1
+	Model* casa1 = new Model("models/casa1/casa1.fbx", main->cameraDetails);
+	escalaX = escalaY = escalaZ = 15.0f;
+	scale = glm::vec3(escalaX, escalaY, escalaZ);
+	posX = -20.0f;
+	posZ = -10.0f;
+	posY = terreno->Superficie(posX, posZ);
+	translate = glm::vec3(posX, posY, posZ);
+	casa1->setTranslate(&translate);
+	casa1->setNextTranslate(&translate);
+	casa1->setScale(&scale);
+	casa1->setNextRotX(-90);
+	ourModel.emplace_back(casa1);
+
+	//CARGAMOS LA CASA2
+	Model* casa2 = new Model("models/casa2/casa2.fbx", main->cameraDetails);
+	escalaX = escalaY = escalaZ = 10.0f;
+	scale = glm::vec3(escalaX, escalaY, escalaZ);
+	posX = -50.0f;
+	posZ = -10.0f;
+	posY = terreno->Superficie(posX, posZ);
+	translate = glm::vec3(posX, posY, posZ);
+	casa2->setScale(&scale);
+	casa2->setNextRotX(180);
+	casa2->setNextRotY(90);
+	casa2->setTranslate(&translate);
+	casa2->setNextTranslate(&translate);
+	ourModel.emplace_back(casa2);
+
+	//CARGAMOS LA CASA3
+	Model* casa3 = new Model("models/casa3/casa3.fbx", main->cameraDetails);
+	escalaX = escalaY = escalaZ = 10.0f;
+	scale = glm::vec3(escalaX, escalaY, escalaZ);
+	posX = -50.0f;
+	posZ = 40.0f;
+	posY = terreno->Superficie(posX, posZ);
+	translate = glm::vec3(posX, posY, posZ);
+	casa3->setScale(&scale);
+	casa3->setNextRotX(-90);
+	casa3->setNextRotZ(90);
+	casa3->setTranslate(&translate);
+	casa3->setNextTranslate(&translate);
+	ourModel.emplace_back(casa3);
+
+	//CARGAMOS EL OXXO
+	Model* oxxo = new Model("models/FachadaOxxo/fachadaOxxo.fbx", main->cameraDetails);
+	escalaX = escalaY = escalaZ = 2.0f;
+	scale = glm::vec3(escalaX, escalaY, escalaZ);
+	posX = -10.0f;
+	posZ = 40.0f;
+	posY = terreno->Superficie(posX, posZ);
+	translate = glm::vec3(posX, posY, posZ);
+	oxxo->setScale(&scale);
+	oxxo->setNextRotX(-90);
+	oxxo->setNextRotZ(180);
+	oxxo->setTranslate(&translate);
+	oxxo->setNextTranslate(&translate);
+	ourModel.emplace_back(oxxo);
+
+	//CARGAMOS EL LETRERO DEL OXXO
+	Model* letreroOxxo = new Model("models/LetreroOxxo/letreroOxxo.fbx", main->cameraDetails);
+	escalaX = escalaY = escalaZ = 2.0f;
+	scale = glm::vec3(escalaX, escalaY, escalaZ);
+	posX = 20.0f;
+	posZ = 40.0f;
+	posY = terreno->Superficie(posX, posZ);
+	translate = glm::vec3(posX, posY, posZ);
+	letreroOxxo->setScale(&scale);
+	letreroOxxo->setNextRotX(-90);
+	letreroOxxo->setNextRotZ(180);
+	letreroOxxo->setTranslate(&translate);
+	letreroOxxo->setNextTranslate(&translate);
+	ourModel.emplace_back(letreroOxxo);
+
+	//CARGAMOS LOS TACOS
+	Model* tacos = new Model("models/Tacos/tacos.fbx", main->cameraDetails);
+	escalaX = escalaY = escalaZ = 2.0f;
+	scale = glm::vec3(escalaX, escalaY, escalaZ);
+	posX = 40.0f;
+	posZ = 40.0f;
+	posY = terreno->Superficie(posX, posZ);
+	translate = glm::vec3(posX, posY, posZ);
+	tacos->setScale(&scale);
+	tacos->setNextRotX(-90);
+	tacos->setTranslate(&translate);
+	tacos->setNextTranslate(&translate);
+	ourModel.emplace_back(tacos);
+
+	//CARGAMOS EL ENEMIGOIDLE
+	Model* enemigo = new Model("models/Enemigo/enemigoIdle.fbx", main->cameraDetails);
+	escalaX = escalaY = escalaZ = 0.02f;
+	scale = glm::vec3(escalaX, escalaY, escalaZ);
+	posX = 60.0f;
+	posZ = 40.0f;
+	posY = terreno->Superficie(posX, posZ);
+	translate = glm::vec3(posX, posY, posZ);
+	enemigo->setScale(&scale);
+	enemigo->setNextRotY(180);
+	enemigo->setTranslate(&translate);
+	enemigo->setNextTranslate(&translate);
+	ourModel.emplace_back(enemigo);
+	try {
+		std::vector<Animation> animations = Animation::loadAllAnimations("models/Enemigo/enemigoIdle.fbx", enemigo->GetBoneInfoMap(), enemigo->getBonesInfo(), enemigo->GetBoneCount());
+		for (Animation animation : animations)
+			enemigo->setAnimator(Animator(animation));
+		enemigo->setAnimation(0);
+	}
+	catch (...) {
+		ERRORL("Could not load animation!", "ANIMACION");
+	}
+
+	//CARGAMOS EL TELEFONO PUBLICO
+	Model* telefono = new Model("models/Telefono/telefono.fbx", main->cameraDetails);
+	escalaX = escalaY = escalaZ = 2.0f;
+	scale = glm::vec3(escalaX, escalaY, escalaZ);
+	posX = 70.0f;
+	posZ = 40.0f;
+	posY = terreno->Superficie(posX, posZ);
+	translate = glm::vec3(posX, posY, posZ);
+	telefono->setScale(&scale);
+	telefono->setNextRotY(180);
+	telefono->setNextRotX(90);
+	telefono->setTranslate(&translate);
+	telefono->setNextTranslate(&translate);
+	ourModel.emplace_back(telefono);
+
+	//CARGAMOS LA ALBERCA
+	Model* alberca = new Model("models/Alberca/alberca.fbx", main->cameraDetails);
+	escalaX = escalaY = escalaZ = 1.5f;
+	scale = glm::vec3(escalaX, escalaY, escalaZ);
+	posX = 80.0f;
+	posZ = 40.0f;
+	posY = terreno->Superficie(posX, posZ);
+	translate = glm::vec3(posX, posY, posZ);
+	alberca->setScale(&scale);
+	alberca->setNextRotY(180);
+	alberca->setNextRotX(90);
+	alberca->setTranslate(&translate);
+	alberca->setNextTranslate(&translate);
+	ourModel.emplace_back(alberca);
 	//CARGA BILLBOARDS
 	inicializaBillboards();
 	std::wstring prueba(L"Puto el que lo lea");
 	ourText.emplace_back(new Texto(prueba, 20, 0, 0, SCR_HEIGHT, 0, camara));
-	billBoard2D.emplace_back(new Billboard2D((WCHAR*)L"billboards/awesomeface.png", 6, 6, 100, 200, 0, camara->cameraDetails));
-	scale = glm::vec3(100.0f, 100.0f, 0.0f);	// it's a bit too big for our scene, so scale it down
-	billBoard2D.back()->setScale(&scale);
+	//billBoard2D.emplace_back(new Billboard2D((WCHAR*)L"billboards/awesomeface.png", 6, 6, 100, 200, 0, camara->cameraDetails));
+	//scale = glm::vec3(100.0f, 100.0f, 0.0f);	// it's a bit too big for our scene, so scale it down
+	//billBoard2D.back()->setScale(&scale);
 	}
 
 void Scenario::inicializaBillboards() {
