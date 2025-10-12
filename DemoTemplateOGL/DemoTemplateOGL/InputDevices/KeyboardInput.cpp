@@ -82,7 +82,7 @@ bool KeysEvents(GameActions *actions){
 //		KEYS[input.S] = false;
 	}
 	if (KEYS[input.Space] && *actions->jump == 0){
-		*actions->jump = 20;
+		*actions->jump = 60;
 	}
 	if (cDelta.getLbtn() && cDelta.getDX() != 0) {
 		actions->setAngle(cDelta.getDX() > 0 ? 1 : -1);
