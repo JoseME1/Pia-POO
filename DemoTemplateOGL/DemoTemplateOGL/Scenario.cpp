@@ -35,7 +35,7 @@ void Scenario::InitGraph(Model *main) {
 	//creamos el objeto skydome
 	sky = new SkyDome(32, 32, 20, (WCHAR*)L"skydome/earth3.png", main->cameraDetails);
 	//creamos el terreno
-	terreno = new Terreno((WCHAR*)L"skydome/terreno2.jpg", (WCHAR*)L"skydome/texterr.jpg", 200, 200, main->cameraDetails);
+	terreno = new Terreno((WCHAR*)L"skydome/terreno2.jpg", (WCHAR*)L"skydome/texterr.jpg", 400, 400, main->cameraDetails);
 	water = new Water((WCHAR*)L"textures/terreno.bmp", (WCHAR*)L"textures/water.bmp", 5, 5, camara->cameraDetails);
 	glm::vec3 translate;
 	glm::vec3 scale;
@@ -360,6 +360,22 @@ void Scenario::InitGraph(Model *main) {
 	alberca->setTranslate(&translate);
 	alberca->setNextTranslate(&translate);
 	ourModel.emplace_back(alberca);
+
+	//CARGAMOS EL OXXO (ACCESIBLE)
+	Model* oxxoAcc = new Model("models/OxxoInterior/OxxoInterior3.fbx", main->cameraDetails);
+	escalaX = escalaY = escalaZ = 1.0f;
+	scale = glm::vec3(escalaX, escalaY, escalaZ);
+	posX = 150.0f;
+	posZ = 40.0f;
+	posY = terreno->Superficie(posX, posZ);
+	translate = glm::vec3(posX, posY, posZ);
+	oxxoAcc->setScale(&scale);
+	oxxoAcc->setNextRotY(180);
+	oxxoAcc->setNextRotX(90);
+	oxxoAcc->setTranslate(&translate);
+	oxxoAcc->setNextTranslate(&translate);
+	ourModel.emplace_back(oxxoAcc);
+
 	//CARGA BILLBOARDS
 	inicializaBillboards();
 	std::wstring prueba(L"Puto el que lo lea");
