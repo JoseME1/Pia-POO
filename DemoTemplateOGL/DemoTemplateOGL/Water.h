@@ -16,9 +16,9 @@ class Water : public Terreno {
 private:
 double WATER_PI_FACTOR = 2.0f * M_PI;
 size_t mapSizeX;
-static constexpr float waveSpeed = 0.01f;
-static constexpr float waveAmplitude = 0.02f;
-static constexpr float waveFrequency = 0.1f;
+static constexpr float waveSpeed = 0.015f;
+static constexpr float waveAmplitude = 0.08f;
+static constexpr float waveFrequency = 0.5f;
 void reloadData(vector<Vertex>& vertices) {
     static float time = 0.f;
     time += waveSpeed;
@@ -66,6 +66,8 @@ public:
 			gpuDemo = new Shader("shaders/water.vs", "shaders/water.fs");
 			setDefaultShader(true);
 		}
+		
+
 		if (getDefaultShader()) {
 			gpuDemo->use();
 			prepShader(*gpuDemo);
@@ -80,6 +82,7 @@ public:
 		static float time = 0.f;
 		time += waveSpeed;
 		shader.setFloat("time", time);
+		
 		Model::Draw(shader,0);
 	}
 
