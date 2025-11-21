@@ -143,6 +143,7 @@ void Scenario::InitGraph(Model *main) {
 
 	//CARGAMOS LA MONEDA (Esto tiene corregido el tema de aparecer en la superficie del terreno)
 	Model* moneda = new Model("models/Moneda/Moneda.fbx", main->cameraDetails);
+	
 	escalaY=escalaX=escalaZ = 4.0f;
 	scale = glm::vec3(escalaX, escalaY, escalaZ);
 	float alturaMoneda = 1.0f * escalaY; // Altura real del modelo en Blender es 1.0, si fuera 2.0 se pondria 2.0, etc
@@ -363,7 +364,7 @@ void Scenario::InitGraph(Model *main) {
 
 	//CARGAMOS EL OXXO (ACCESIBLE)
 	Model* oxxoAcc = new Model("models/OxxoInterior/OxxoInterior3.fbx", main->cameraDetails);
-	escalaX = escalaY = escalaZ = 1.0f;
+	escalaX = escalaY = escalaZ = 0.5f;
 	scale = glm::vec3(escalaX, escalaY, escalaZ);
 	posX = 150.0f;
 	posZ = 40.0f;
@@ -375,8 +376,54 @@ void Scenario::InitGraph(Model *main) {
 	oxxoAcc->setTranslate(&translate);
 	oxxoAcc->setNextTranslate(&translate);
 	ourModel.emplace_back(oxxoAcc);
+	//ELIMINAR HITBOX
+	if (oxxoAcc->getModelAttributes()->at(0).hitbox != NULL) {
+		Model* AABB = (Model*)oxxoAcc->getModelAttributes()->at(0).hitbox;
+		delete AABB;
+		oxxoAcc->getModelAttributes()->at(0).hitbox = NULL;
+	}
+	//CREAR HITBOX (por alguna razon, se dibuja en un lado pero colisiona en otro xdddd)
+	Node nodoWall1 = oxxoAcc->AABBsize;
+	nodoWall1.m_center.x = 16;
+	nodoWall1.m_center.y = 1;
+	nodoWall1.m_center.z = 1;
+	nodoWall1.m_halfWidth = 1;
+	nodoWall1.m_halfHeight = 10;
+	nodoWall1.m_halfDepth = 10;
+	
+	Model* hitbox1 = CollitionBox::GenerateAABB(translate, nodoWall1, main->cameraDetails);
 
-	//CARGA BILLBOARDS
+	auto it1 = find(ourModel.begin(), ourModel.end(), hitbox1);
+	if (it1 != ourModel.end()) {
+		ourModel.erase(it1);
+	}
+	oxxoAcc->getModelAttributes()->at(0).hitbox = hitbox1;
+	//CREAR HITBOX 2 (Pared izquierda)
+	ModelAttributes wall2;
+	wall2.setTranslate(&translate);
+	wall2.setNextTranslate(&translate);
+
+	Node nodoWall2 = oxxoAcc->AABBsize;
+	nodoWall2.m_center.x = -16;
+	nodoWall2.m_center.y = 1;
+	nodoWall2.m_center.z = 1;
+	nodoWall2.m_halfWidth = 1;
+	nodoWall2.m_halfHeight = 10;
+	nodoWall2.m_halfDepth = 10;
+
+	Model* hitbox2 = CollitionBox::GenerateAABB(translate, nodoWall2, main->cameraDetails);
+
+	// *** ELIMINAR DE ourModel SI FUE AGREGADA AUTOMÁTICAMENTE ***
+	auto it2 = std::find(ourModel.begin(), ourModel.end(), hitbox2);
+	if (it2 != ourModel.end()) {
+		ourModel.erase(it2);
+	}
+
+	wall2.hitbox = hitbox2;
+	oxxoAcc->getModelAttributes()->push_back(wall2);
+	
+
+	// CARGA BILLBOARDS
 	inicializaBillboards();
 	std::wstring prueba(L"Puto el que lo lea");
 	ourText.emplace_back(new Texto(prueba, 20, 0, 0, SCR_HEIGHT, 0, camara));
