@@ -46,11 +46,17 @@ class Scene {
 					collider = (Model*)mcollider.model;
 					idxCollider = mcollider.attrIdx;
 				}
+
+				//REVISA COLISION DE JUGADOR CON MONEDAS
 				if (collider != NULL && model == camara){
-					if (ejeColision.y == 1){
-						INFO("APLASTADO!!!!", "JUMP HITBOX");
-						if (removeCollideModel(collider, idxCollider))
+					if (collider->getModelType() == "Moneda") {
+						INFO("Moneda recogida", "COLLISION");
+						
+						// Eliminamos la moneda de la escena
+						if (removeCollideModel(collider, idxCollider)) {
 							i--;
+						}
+						return 1;
 					}
 				}
 				if (i < 0) i = 0;

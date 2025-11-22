@@ -65,6 +65,9 @@ bool newContext = false; // Bandera para identificar si OpenGL 2.0 > esta activa
 struct GameTime gameTime;
 Camera* Camera::cameraInstance = NULL;
 
+//CONTADOR MONEDAS
+int contadorMonedas = 0;
+
 // Objecto de escena y render
 Scene *OGLobj;
 
@@ -148,14 +151,17 @@ int startGameEngine(void *ptrMsg){
 	coordenadas->name = "Coordenadas";
     OGLobj->getLoadedText()->emplace_back(coordenadas);
     updatePosCords(coordenadas);
-    //Esto se muestra hasta que se recojan 3 monedas
+
+    //MISION DE RECOGER 3 MONEDAS
 	Texto* mision = new Texto((WCHAR*)L"Recoge 3 monedas", 20, 0, 0, 50, 0, model);;
 	mision->name = "Mision";
 	OGLobj->getLoadedText()->emplace_back(mision);
-    //Actualizar contador de monedas
+
+	//TEXTO PARA CONTADOR DE MONEDAS INICIALIZADO A 0
 	Texto* monedas = new Texto((WCHAR*)L"Monedas= 0/3", 20, 0, 0, 80, 0, model);;
 	monedas->name = "Monedas";
 	OGLobj->getLoadedText()->emplace_back(monedas);
+
     // configure global opengl state
     // -----------------------------
     glEnable(GL_DEPTH_TEST);
@@ -180,6 +186,19 @@ int startGameEngine(void *ptrMsg){
         // ------
         bool checkCollition = checkInput(&actions, OGLobj);
         int cambio = OGLobj->update();
+        
+		//COMPRUEBA SI HAY COLISION CON MONEDA
+        if (cambio == 1) { // Código especial para moneda recogida
+            contadorMonedas++;
+
+            // *** ACTUALIZAR TEXTO DE MONEDAS ***
+            WCHAR monedasTexto[50] = { 0 };
+            swprintf(monedasTexto, 50, L"Monedas= %d/3", contadorMonedas);
+            monedas->initTexto(monedasTexto);
+
+            INFO("Total de monedas: " + std::to_string(contadorMonedas), "MONEDAS");
+        }
+
         Scene *escena = OGLobj->Render();
         if (escena != OGLobj) {
             delete OGLobj;

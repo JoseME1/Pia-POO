@@ -73,76 +73,8 @@ void Scenario::InitGraph(Model *main) {
 	m.hitbox = model; // Le decimos al ultimo ModelAttribute que tiene un hitbox asignado
 	pez->getModelAttributes()->push_back(m);*/
 
-	/*ESTO CARGA DANCING VAMPIRE CON ANIMACIONES
-	model = new Model("models/dancing_vampire/dancing_vampire.dae", main->cameraDetails);
-	translate = glm::vec3(0.0f, terreno->Superficie(0.0f, 60.0f), 60.0f);
-	scale = glm::vec3(0.02f, 0.02f, 0.02f);	// it's a bit too big for our scene, so scale it down
-	model->setTranslate(&translate);
-	model->setNextTranslate(&translate);
-	model->setScale(&scale);
-	model->setNextRotY(90);
-	ourModel.emplace_back(model);
-	try{
-		std::vector<Animation> animations = Animation::loadAllAnimations("models/dancing_vampire/dancing_vampire.dae", model->GetBoneInfoMap(), model->getBonesInfo(), model->GetBoneCount());
-		std::vector<Animation> animation = Animation::loadAllAnimations("models/dancing_vampire/dancing_vampire.dae", model->GetBoneInfoMap(), model->getBonesInfo(), model->GetBoneCount());
-		std::move(animation.begin(), animation.end(), std::back_inserter(animations));
-		for (Animation animation : animations)
-			model->setAnimator(Animator(animation));
-		model->setAnimation(1);
-	}catch(...){
-		ERRORL("Could not load animation!", "ANIMACION");
-	}
-
-	//ESTO CARGA SILLY DANCING Y LO CLONA CON ANIMACIONES
-	Model* silly = new Model("models/Silly_Dancing/Silly_Dancing.fbx", main->cameraDetails);
-	translate = glm::vec3(10.0f, terreno->Superficie(10.0f, 60.0f) , 60.0f);
-	scale = glm::vec3(0.02f, 0.02f, 0.02f);	// it's a bit too big for our scene, so scale it down
-	silly->setTranslate(&translate);
-	silly->setNextTranslate(&translate);
-	silly->setScale(&scale);
-	silly->setNextRotY(180);
-	ourModel.emplace_back(silly);
-	try{
-		std::vector<Animation> animations = Animation::loadAllAnimations("models/Silly_Dancing/Silly_Dancing.fbx", silly->GetBoneInfoMap(), silly->getBonesInfo(), silly->GetBoneCount());
-		for (Animation animation : animations)
-			silly->setAnimator(Animator(animation));
-		silly->setAnimation(0);
-	}catch(...){
-		ERRORL("Could not load animation!", "ANIMACION");
-	}
-	m.setTranslate(&translate);
-	m.setNextTranslate(&translate);
-	m.translate.x += 10;
-	m.setScale(&scale);
-	m.setNextRotY(180);
-	m.setRotY(180);
-	model = CollitionBox::GenerateAABB(m.translate, silly->AABBsize, main->cameraDetails);
-	model->setTranslate(&m.translate);
-	model->setNextTranslate(&m.translate);
-	model->setScale(&scale);
-	model->setNextRotY(180);
-	model->setRotY(180);
-	m.hitbox = model; // Le decimos al ultimo ModelAttribute que tiene un hitbox asignado
-	silly->getModelAttributes()->push_back(m);
-	// Import model and clone with bones and animations
-	model = new Model("models/Silly_Dancing/Silly_Dancing.fbx", main->cameraDetails);
-	translate = glm::vec3(30.0f, terreno->Superficie(30.0f, 60.0f) , 60.0f);
-	scale = glm::vec3(0.02f, 0.02f, 0.02f);	// it's a bit too big for our scene, so scale it down
-	model->name = "Silly_Dancing1";
-	model->setTranslate(&translate);
-	model->setNextTranslate(&translate);
-	model->setScale(&scale);
-	model->setNextRotY(180);
-	ourModel.emplace_back(model);
-	// Para clonar la animacion se eliminan los huesos del modelo actual y se copian los modelos y animators
-	model->GetBoneInfoMap()->clear();
-	model->getBonesInfo()->clear();
-	*model->GetBoneInfoMap() = *silly->GetBoneInfoMap();
-	*model->getBonesInfo() = *silly->getBonesInfo();
-	model->setAnimator(silly->getAnimator());*/
-
 	//CARGAMOS LA MONEDA (Esto tiene corregido el tema de aparecer en la superficie del terreno)
-	Model* moneda = new Model("models/Moneda/Moneda.fbx", main->cameraDetails);
+	Model *moneda = new Model("models/Moneda/Moneda.fbx", main->cameraDetails);
 	
 	escalaY=escalaX=escalaZ = 4.0f;
 	scale = glm::vec3(escalaX, escalaY, escalaZ);
@@ -157,7 +89,27 @@ void Scenario::InitGraph(Model *main) {
 	moneda->setTranslate(&translate);
 	moneda->setNextTranslate(&translate);
 	moneda->setScale(&scale);
+	moneda->setModelType("Moneda"); //ACTUA COMO LOS TAGS DE UNITY
 	ourModel.emplace_back(moneda);
+	//PRIMER CLON DE MONEDA
+	ModelAttributes m;
+	m.setScale(&scale);
+	m.setTranslate(&translate);
+	m.setNextTranslate(&translate);
+	m.translate.x = 55;
+	model = CollitionBox::GenerateAABB(m.translate, moneda->AABBsize, main->cameraDetails);
+	model->setTranslate(&m.translate);
+	model->setNextTranslate(&m.translate);
+	m.hitbox = model;
+	moneda->getModelAttributes()->push_back(m);
+	//SEGUNDO CLON DE MONEDA
+	m.translate.x = 60;
+	model = CollitionBox::GenerateAABB(m.translate, moneda->AABBsize, main->cameraDetails);
+	model->setTranslate(&m.translate);
+	model->setNextTranslate(&m.translate);
+	m.hitbox = model; // Le decimos al ultimo ModelAttribute que tiene un hitbox asignado
+	moneda->getModelAttributes()->push_back(m);
+	
 
 	//CARGAMOS EL VOCHO
 	Model* vocho = new Model("models/Vocho/vocho.fbx", main->cameraDetails);
@@ -382,45 +334,51 @@ void Scenario::InitGraph(Model *main) {
 		delete AABB;
 		oxxoAcc->getModelAttributes()->at(0).hitbox = NULL;
 	}
-	//CREAR HITBOX (por alguna razon, se dibuja en un lado pero colisiona en otro xdddd)
-	Node nodoWall1 = oxxoAcc->AABBsize;
-	nodoWall1.m_center.x = 16;
-	nodoWall1.m_center.y = 1;
-	nodoWall1.m_center.z = 1;
-	nodoWall1.m_halfWidth = 1;
-	nodoWall1.m_halfHeight = 10;
-	nodoWall1.m_halfDepth = 10;
 	
-	Model* hitbox1 = CollitionBox::GenerateAABB(translate, nodoWall1, main->cameraDetails);
+	Node nodoWall = oxxoAcc->AABBsize;
+	//pared 1
+	nodoWall.m_center.x = 18;
+	nodoWall.m_center.y = 1;
+	nodoWall.m_center.z = 1;
+	nodoWall.m_halfWidth = 1;
+	nodoWall.m_halfHeight = 10;
+	nodoWall.m_halfDepth = 10;
+	model = CollitionBox::GenerateAABB(translate, nodoWall, main->cameraDetails);
+	m.hitbox = model;
+	m.active = false;
+	oxxoAcc->getModelAttributes()->push_back(m);
+	
+	//pared2
+	nodoWall.m_center.x = -20;
+	nodoWall.m_halfDepth = 15;
+	model = CollitionBox::GenerateAABB(translate, nodoWall, main->cameraDetails);
+	m.hitbox = model;
+	m.active = false;
+	oxxoAcc->getModelAttributes()->push_back(m);
 
-	auto it1 = find(ourModel.begin(), ourModel.end(), hitbox1);
-	if (it1 != ourModel.end()) {
-		ourModel.erase(it1);
-	}
-	oxxoAcc->getModelAttributes()->at(0).hitbox = hitbox1;
-	//CREAR HITBOX 2 (Pared izquierda)
-	ModelAttributes wall2;
-	wall2.setTranslate(&translate);
-	wall2.setNextTranslate(&translate);
+	//pared 3
+	nodoWall.m_center.x = 1;
+	nodoWall.m_center.z = 17;
+	nodoWall.m_halfDepth = 1;
+	nodoWall.m_halfWidth = 20;
+	nodoWall.m_halfHeight = 10;
+	model = CollitionBox::GenerateAABB(translate, nodoWall, main->cameraDetails);
+	m.hitbox = model;
+	m.active = false;
+	oxxoAcc->getModelAttributes()->push_back(m);
+	
 
-	Node nodoWall2 = oxxoAcc->AABBsize;
-	nodoWall2.m_center.x = -16;
-	nodoWall2.m_center.y = 1;
-	nodoWall2.m_center.z = 1;
-	nodoWall2.m_halfWidth = 1;
-	nodoWall2.m_halfHeight = 10;
-	nodoWall2.m_halfDepth = 10;
-
-	Model* hitbox2 = CollitionBox::GenerateAABB(translate, nodoWall2, main->cameraDetails);
-
-	// *** ELIMINAR DE ourModel SI FUE AGREGADA AUTOMÁTICAMENTE ***
-	auto it2 = std::find(ourModel.begin(), ourModel.end(), hitbox2);
-	if (it2 != ourModel.end()) {
-		ourModel.erase(it2);
-	}
-
-	wall2.hitbox = hitbox2;
-	oxxoAcc->getModelAttributes()->push_back(wall2);
+	/*ModelAttributes m;
+	m.setScale(&scale);
+	m.setTranslate(&translate);
+	m.setNextTranslate(&translate);
+	m.translate.x = 55;
+	model = CollitionBox::GenerateAABB(m.translate, moneda->AABBsize, main->cameraDetails);
+	model->setTranslate(&m.translate);
+	model->setNextTranslate(&m.translate);
+	m.hitbox = model;
+	moneda->getModelAttributes()->push_back(m);*/
+	
 	
 
 	// CARGA BILLBOARDS
