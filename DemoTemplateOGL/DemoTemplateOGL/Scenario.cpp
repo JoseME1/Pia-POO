@@ -424,15 +424,15 @@ void Scenario::InitGraph(Model *main) {
 	
 
 	// CARGA BILLBOARDS
-	inicializaBillboards();
-	std::wstring prueba(L"Puto el que lo lea");
-	ourText.emplace_back(new Texto(prueba, 20, 0, 0, SCR_HEIGHT, 0, camara));
+	//inicializaBillboards();
+	//std::wstring prueba(L"Recoge 3 monedas");
+	//ourText.emplace_back(new Texto(prueba, 20, 0, 1000, 20, 0, camara));
 	//billBoard2D.emplace_back(new Billboard2D((WCHAR*)L"billboards/awesomeface.png", 6, 6, 100, 200, 0, camara->cameraDetails));
 	//scale = glm::vec3(100.0f, 100.0f, 0.0f);	// it's a bit too big for our scene, so scale it down
 	//billBoard2D.back()->setScale(&scale);
 	}
 
-void Scenario::inicializaBillboards() {
+/*void Scenario::inicializaBillboards() {
 	float ye = terreno->Superficie(0, 0);
 	billBoard.emplace_back(new Billboard((WCHAR*)L"billboards/Arbol.png", 6, 6, 0, ye - 1, 0, camara->cameraDetails));
 
@@ -452,7 +452,7 @@ void Scenario::inicializaBillboards() {
 		billBoardAnimated->pushFrame(new Billboard((WCHAR*)textura, 6, 6, 5, ye - 1, -5, camara->cameraDetails));		
 	}
 	billBoardAnim.emplace_back(billBoardAnimated);
-}
+}*/
 
 	//el metodo render toma el dispositivo sobre el cual va a dibujar
 	//y hace su tarea ya conocida
