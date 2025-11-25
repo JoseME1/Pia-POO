@@ -273,6 +273,7 @@ void Scenario::InitGraph(Model *main) {
 	enemigo->setNextRotY(180);
 	enemigo->setTranslate(&translate);
 	enemigo->setNextTranslate(&translate);
+	enemigo->setModelType("Enemigo"); 
 	ourModel.emplace_back(enemigo);
 	try {
 		std::vector<Animation> animations = Animation::loadAllAnimations("models/Enemigo/enemigoIdle.fbx", enemigo->GetBoneInfoMap(), enemigo->getBonesInfo(), enemigo->GetBoneCount());

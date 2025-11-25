@@ -162,6 +162,9 @@
     <ClInclude Include="..\..\ExternalResources\imgui\imgui_impl_opengl3_loader.h">
       <Filter>imgui</Filter>
     </ClInclude>
+    <ClInclude Include="CombatSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DemoTemplateOGL.cpp">
@@ -229,6 +232,9 @@
     </ClCompile>
     <ClCompile Include="..\..\ExternalResources\imgui\backends\imgui_impl_win32.cpp">
       <Filter>imgui\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="CombatSystem.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

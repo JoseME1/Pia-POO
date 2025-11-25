@@ -19,6 +19,9 @@
 #include "imgui.h"
 #include "imgui_impl_win32.h"
 
+//combat system
+#include "CombatSystem.h"
+
 // *** IMPORTANTE: Decirle a ImGui que ya tenemos GLAD cargado ***
 #define IMGUI_IMPL_OPENGL_LOADER_GLAD
 #include "imgui_impl_opengl3.h"
@@ -67,14 +70,43 @@ int startGameEngine(void* ptrMsg);
 unsigned int SCR_WIDTH = 800;
 unsigned int SCR_HEIGHT = 600;
 glm::vec2 windowSize;
-bool showHitbox = true;
-bool showStats = true;
+bool showHitbox = false;
+bool showStats = false;
 bool newContext = false; // Bandera para identificar si OpenGL 2.0 > esta activa
 struct GameTime gameTime;
 Camera* Camera::cameraInstance = NULL;
 
 //CONTADOR MONEDAS
 int contadorMonedas = 0;
+
+//Destruir enemigo
+bool enemigoDerrotado = false;
+
+//ENUM PARA MOSTRAR DIFERENTES DIALOGOS SEGUN CONTEXTO
+enum DialogoID {
+    DIALOGO_NONE = 0,
+    DIALOGO_INTRO,
+    DIALOGO_MONEDAS0,
+    DIALOGO_ENEMIGO,
+    DIALOGO_BUSCA_VENDEDOR
+    // agrega más diálogos aquí
+};
+
+enum MisionID {
+    MISION_BUSCAR_MONEDAS,
+    MISION_IR_TIENDA,
+    MISION_BUSCAR_VENDEDOR,
+    MISION_DERROTA_AL_VENDEDOR
+};
+
+static DialogoID dialogoActual = DIALOGO_INTRO;
+static MisionID misionActual = MISION_BUSCAR_MONEDAS;
+static CombatSystem* combatSystem = nullptr;
+
+void MostrarDialogo(const char* texto, DialogoID& dialogoActual);
+void MostrarCombate(CombatSystem* combat);
+void MostrarResultadoCombate(CombatSystem* combat, DialogoID& dialogoActual, CombatSystem*& combatSystem);
+void DestruirEnemigo();
 
 // Objecto de escena y render
 Scene *OGLobj;
@@ -160,15 +192,7 @@ int startGameEngine(void *ptrMsg){
     OGLobj->getLoadedText()->emplace_back(coordenadas);
     updatePosCords(coordenadas);
 
-    //MISION DE RECOGER 3 MONEDAS
-	Texto* mision = new Texto((WCHAR*)L"Recoge 3 monedas", 20, 0, 0, 50, 0, model);;
-	mision->name = "Mision";
-	OGLobj->getLoadedText()->emplace_back(mision);
-
-	//TEXTO PARA CONTADOR DE MONEDAS INICIALIZADO A 0
-	Texto* monedas = new Texto((WCHAR*)L"Monedas= 0/3", 20, 0, 0, 80, 0, model);;
-	monedas->name = "Monedas";
-	OGLobj->getLoadedText()->emplace_back(monedas);
+    
 
     // configure global opengl state
     // -----------------------------
@@ -209,28 +233,101 @@ int startGameEngine(void *ptrMsg){
         GameActions actions;
         actions.jump = &jump;
 
-        // *** CREAR UI DE IMGUI ***
+
+     
+        // Mostrar diálogo según estado
+        switch (dialogoActual)
         {
-            ImGui::Begin("Debug Menu");
+        case DIALOGO_INTRO:
+            MostrarDialogo("Tienes hambre y necesitas monedas para comprar comida...", dialogoActual);
+            break;
 
-            ImGui::Text("FPS: %d", totFrames);
-            ImGui::Separator();
+        case DIALOGO_MONEDAS0:
+            MostrarDialogo("Ve a la tienda por algo de comer. Estas en los huesos xDxDXDxxdxdxdx", dialogoActual);
+            break;
 
-            ImGui::Checkbox("Show Hitboxes", &showHitbox);
-            ImGui::Checkbox("Show Stats", &showStats);
-            ImGui::Separator();
+        case DIALOGO_ENEMIGO:
+            MostrarDialogo("Oye tu, te vi robando de la tienda! Preparate para morir!!!!!!111!!?", dialogoActual);
+            break;
 
-            ImGui::Text("Player Position:");
-            glm::vec3* pos = OGLobj->getMainModel()->getTranslate();
-            ImGui::Text("  X: %.2f", pos->x);
-            ImGui::Text("  Y: %.2f", pos->y);
-            ImGui::Text("  Z: %.2f", pos->z);
-            ImGui::Separator();
+        case DIALOGO_BUSCA_VENDEDOR:
+            MostrarDialogo("Como siempre no hay nadie atendiendo, debiste ir a un seven...\n PERO EN TU RANCHO NO HAY SEVEN XD\n Busca al vendedor.", dialogoActual);
+            break;
 
-            ImGui::Text("Monedas: %d/3", contadorMonedas);
+        default:
+            break;
+        }
+
+        if (combatSystem && combatSystem->isCombatActive() && dialogoActual == DIALOGO_NONE) {
+            MostrarCombate(combatSystem);
+        }
+
+        else if (combatSystem && !combatSystem->isCombatActive() && dialogoActual== DIALOGO_NONE) {
+            MostrarResultadoCombate(combatSystem, dialogoActual, combatSystem);
+        }
+       
+
+
+        //Menu dinamico con contadores, vida, etc
+        
+        {
+            ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x - 250, 10), ImGuiCond_Always);
+            ImGui::SetNextWindowSizeConstraints(ImVec2(240, 0), ImVec2(240, FLT_MAX));
+
+            ImGuiWindowFlags flags =
+                ImGuiWindowFlags_NoTitleBar |
+                ImGuiWindowFlags_NoMove |
+                ImGuiWindowFlags_AlwaysAutoResize |
+                ImGuiWindowFlags_NoCollapse;
+
+
+
+            ImGui::Begin("Misiones", nullptr, flags);
+
+            //ImGui::Text("FPS: %d", totFrames);
+            //ImGui::Separator();
+
+            ImGui::Text("Objetivo:");
+            switch (misionActual) {
+            case MISION_BUSCAR_MONEDAS:
+                ImGui::Text("Recolecta 3 monedas");
+                ImGui::Text("Monedas: %d", contadorMonedas);
+                break;
+
+            case MISION_IR_TIENDA:
+                ImGui::Text("Ve a la tienda");
+                break;
+                
+            case MISION_BUSCAR_VENDEDOR:
+                ImGui::Text("Busca al vendedor");
+                break;
+
+            case MISION_DERROTA_AL_VENDEDOR:
+                ImGui::Text("Derrota al vendedor");
+                break;
+
+            default:
+                ImGui::Text("Sin misión activa");
+                break;
+            }
+
+            if (ImGui::CollapsingHeader("Opciones Debug")) {
+                ImGui::Checkbox("Show Hitboxes", &showHitbox);
+                ImGui::Checkbox("Show Stats", &showStats);
+            }
+
+            //ImGui::Text("Player Position:");
+            //glm::vec3* pos = OGLobj->getMainModel()->getTranslate();
+            //ImGui::Text("  X: %.2f", pos->x);
+            //ImGui::Text("  Y: %.2f", pos->y);
+            //ImGui::Text("  Z: %.2f", pos->z);
+            //ImGui::Separator();
+
 
             ImGui::End();
         }
+
+
         // render
         // ------
         bool checkCollition = checkInput(&actions, OGLobj);
@@ -240,12 +337,38 @@ int startGameEngine(void *ptrMsg){
         if (cambio == 1) { // Código especial para moneda recogida
             contadorMonedas++;
 
-            // *** ACTUALIZAR TEXTO DE MONEDAS ***
-            WCHAR monedasTexto[50] = { 0 };
-            swprintf(monedasTexto, 50, L"Monedas= %d/3", contadorMonedas);
-            monedas->initTexto(monedasTexto);
+            //CAMBIO DE DIALOGO y MISION
+            if (contadorMonedas == 3 && dialogoActual!= DIALOGO_MONEDAS0) {
+                dialogoActual = DIALOGO_MONEDAS0;
+                misionActual = MISION_IR_TIENDA;
+            }
+        }
 
-            INFO("Total de monedas: " + std::to_string(contadorMonedas), "MONEDAS");
+        //COMPROBAR ZONA Y MONEDAS PARAA DIALOGO
+        if (contadorMonedas == 3 && dialogoActual != DIALOGO_BUSCA_VENDEDOR) {
+            float targetX = 150.0f;
+            float targetZ = 38.0f;
+            float activationRadius = 5.0f;
+
+            float distanceX = model->getTranslate()->x - targetX;
+            float distanceZ = model->getTranslate()->z - targetZ;
+            float distance = sqrt(distanceX * distanceX + distanceZ * distanceZ);
+
+            if (distance <= activationRadius) {
+                dialogoActual = DIALOGO_BUSCA_VENDEDOR;
+                misionActual = MISION_BUSCAR_VENDEDOR;
+            }
+        }
+
+        //DIALOGO ENEMIGO
+        if(contadorMonedas==3 && dialogoActual!=DIALOGO_ENEMIGO && cambio==2){
+            dialogoActual = DIALOGO_ENEMIGO;
+            misionActual = MISION_DERROTA_AL_VENDEDOR;
+
+            if (combatSystem == nullptr) {
+                combatSystem = new CombatSystem();
+            }
+            combatSystem->startCombat();
         }
 
         Scene* escena = OGLobj->Render();
@@ -715,4 +838,184 @@ void updateFPS(Texto *fps, int totFrames){
     swprintf((wchar_t*)conv, 50, L"%d", totFrames);
     wcscat_s((wchar_t*)conv, 50, L" FPS");
     fps->initTexto(conv);
+}
+
+void MostrarCombate(CombatSystem* combat) {
+    if (!combat || !combat->isCombatActive()) return;
+
+    ImGuiIO& io = ImGui::GetIO();
+
+    // --- Posicionar abajo, estilo HUD ---
+    float width = io.DisplaySize.x * 0.9f;   // 90% ancho pantalla
+    float height = 0;                        // AutoResize manejará height
+    float posX = (io.DisplaySize.x - width) * 0.5f;
+    float posY = io.DisplaySize.y - 250;     // Ajusta segun gusto
+
+    ImGui::SetNextWindowPos(ImVec2(posX, posY), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(width, height), ImGuiCond_FirstUseEver);
+
+    ImGuiWindowFlags flags =
+        ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_AlwaysAutoResize |
+        ImGuiWindowFlags_NoCollapse |
+        ImGuiWindowFlags_NoMove |
+        ImGuiWindowFlags_NoTitleBar |
+        ImGuiWindowFlags_NoScrollbar;
+
+    ImGui::Begin("Combate", nullptr, flags);
+
+    auto playerStats = combat->getPlayerStats();
+    auto enemyStats = combat->getEnemyStats();
+
+    // --- Información de vida ---
+    ImGui::Text("TU VIDA: %d/%d", playerStats.health, playerStats.maxHealth);
+    ImGui::ProgressBar(playerStats.health / (float)playerStats.maxHealth, ImVec2(-1, 0));
+
+    ImGui::Spacing();
+
+    ImGui::Text("ENEMIGO: %d/%d", enemyStats.health, enemyStats.maxHealth);
+    ImGui::ProgressBar(enemyStats.health / (float)enemyStats.maxHealth, ImVec2(-1, 0));
+
+    ImGui::Separator();
+    ImGui::TextWrapped("%s", combat->getLastActionLog().c_str());
+    ImGui::Separator();
+
+    // --- Botones del jugador ---
+    if (combat->getIsPlayerTurn()) {
+        if (ImGui::Button("Atacar", ImVec2(140, 40))) combat->executePlayerAction(CombatAction::ATTACK);
+        ImGui::SameLine();
+        if (ImGui::Button("Defender", ImVec2(140, 40))) combat->executePlayerAction(CombatAction::DEFEND);
+        ImGui::SameLine();
+        if (ImGui::Button("Burla", ImVec2(140, 40))) combat->executePlayerAction(CombatAction::TAUNT);
+        ImGui::SameLine();
+        if (ImGui::Button("Esquivar", ImVec2(140, 40))) combat->executePlayerAction(CombatAction::DODGE);
+    }
+    else {
+        ImGui::Text("Turno del enemigo...");
+    }
+
+    ImGui::End();
+}
+
+
+
+void MostrarResultadoCombate(CombatSystem* combat, DialogoID& dialogoActual, CombatSystem*& combatSystem) {
+    if (!combat) return;
+
+    ImGuiIO& io = ImGui::GetIO();
+
+    ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x / 2 - 250, io.DisplaySize.y / 2 - 150), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(500, 300), ImGuiCond_Always);
+
+    ImGui::Begin("Resultado del Combate", nullptr,
+        ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoMove |
+        ImGuiWindowFlags_NoCollapse);
+
+    ImGui::Spacing();
+    ImGui::Spacing();
+
+    if (combat->isPlayerAlive()) {
+        // VICTORIA
+        if (!enemigoDerrotado) {
+            enemigoDerrotado = true;
+            DestruirEnemigo();
+        }
+
+        ImVec2 textSize = ImGui::CalcTextSize("¡¡¡VICTORIA!!!");
+        ImGui::SetCursorPosX((500 - textSize.x) / 2.0f);
+        ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "¡¡¡VICTORIA!!!");
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        ImGui::TextWrapped("Le diste en su madre al cajero! Ya puedes salir con tu comida.");
+
+        
+
+        ImGui::Spacing();
+        ImGui::Spacing();
+
+        float buttonWidth = 200.0f;
+        ImGui::SetCursorPosX((500 - buttonWidth) / 2.0f);
+        if (ImGui::Button("Continuar", ImVec2(buttonWidth, 50))) {
+            dialogoActual = DIALOGO_NONE;
+            delete combatSystem;
+            combatSystem = nullptr;
+        }
+    }
+    else {
+        // DERROTA
+        ImVec2 textSize = ImGui::CalcTextSize("DERROTA");
+        ImGui::SetCursorPosX((500 - textSize.x) / 2.0f);
+        ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "DERROTA");
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        ImGui::TextWrapped("No pues, ni pedo XD. El cajero te dio en tu madre.");
+
+
+        ImGui::Spacing();
+        ImGui::Spacing();
+
+        float buttonWidth = 200.0f;
+        ImGui::SetCursorPosX((500 - buttonWidth) / 2.0f);
+        if (ImGui::Button("Reintentar", ImVec2(buttonWidth, 50))) {
+            combat->startCombat();
+        }
+    }
+
+    ImGui::End();
+}
+
+
+void MostrarDialogo(const char* texto, DialogoID& dialogoActual)
+{
+    ImGuiIO& io = ImGui::GetIO();
+    ImGui::SetNextWindowPos(ImVec2(20, io.DisplaySize.y - 150), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x - 40, 130), ImGuiCond_Always);
+
+    ImGuiWindowFlags flags =
+        ImGuiWindowFlags_NoTitleBar |
+        ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoMove |
+        ImGuiWindowFlags_NoCollapse |
+        ImGuiWindowFlags_NoScrollbar;
+
+    ImGui::Begin("Dialogo", nullptr, flags);
+
+    ImGui::TextWrapped(texto);
+
+    ImGui::Spacing();
+    if (ImGui::Button("Cerrar")) {
+        dialogoActual = DIALOGO_NONE; // ✅ Simplemente cierra el diálogo
+    }
+
+    ImGui::End();
+}
+
+void DestruirEnemigo() {
+    if (!OGLobj) return;
+
+    std::vector<Model*>* models = OGLobj->getLoadedModels();
+
+    // Buscar y eliminar el enemigo
+    for (auto it = models->begin(); it != models->end(); ) {
+        if ((*it)->getModelType() == "Enemigo") {
+            Model* enemigo = *it;
+
+            // Eliminar el modelo
+            delete enemigo;
+
+            // Removerlo del vector
+            it = models->erase(it);
+            break;
+        }
+        else {
+            ++it;
+        }
+    }
 }

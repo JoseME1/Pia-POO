@@ -50,13 +50,16 @@ class Scene {
 				//REVISA COLISION DE JUGADOR CON MONEDAS
 				if (collider != NULL && model == camara){
 					if (collider->getModelType() == "Moneda") {
-						INFO("Moneda recogida", "COLLISION");
+						
 						
 						// Eliminamos la moneda de la escena
 						if (removeCollideModel(collider, idxCollider)) {
 							i--;
 						}
 						return 1;
+					}
+					if (collider->getModelType() == "Enemigo") {
+						return 2;
 					}
 				}
 				if (i < 0) i = 0;
