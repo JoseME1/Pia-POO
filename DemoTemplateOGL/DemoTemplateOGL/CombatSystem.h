@@ -37,6 +37,12 @@ private:
     int currentAnimationIndex;
     bool isPlayingActionAnimation;
 
+    //Enemy animation support
+    Model* enemyModel;
+	bool enemyIsPlayingActionAnimation;
+	double enemyAnimationTimer;
+	bool enemyAttackToggle;
+
     // ✅ NUEVO: enemy turn delay
     bool enemyTurnPending;
     double enemyTurnTimer;
@@ -50,12 +56,16 @@ private:
     static constexpr float TAUNT_INCREMENT = 0.10f;  // +10% crit per taunt
     static constexpr float MAX_CRIT_BONUS = 1.0f;    // cap 100%
 
+    //enemy animation duration
+	static constexpr double enemyActionAnimDurationMs = 800.0; // milliseconds
+
     void enemyTurn();
     int calculateDamage(const CombatStats& attacker, const CombatStats& defender, bool isCritical);
     CombatAction getRandomEnemyAction();
 
     // ✅ NUEVO: Control de animaciones
     void setPlayerAnimation(int animIndex);
+	void setEnemyAnimation(int animIndex);
     void updateAnimations(double deltaTime);
 
 public:
@@ -75,4 +85,7 @@ public:
 
     // ✅ NUEVO: Configurar el modelo del jugador
     void setPlayerModel(Model* model);
+
+	// ✅ NUEVO: Configurar el modelo del enemigo
+	void setEnemyModel(Model* model);
 };

@@ -409,6 +409,21 @@ int startGameEngine(void *ptrMsg){
                 combatSystem = new CombatSystem();
             }
             combatSystem->setPlayerModel(model);
+
+			//find enemy model in scene
+			Model* enemyModel = nullptr;
+            std::vector<Model*>* loaded = OGLobj->getLoadedModels();
+            for (Model* m : *loaded) {
+                if (m && m->getModelType() == "Enemigo") {
+                    enemyModel = m;
+                    break;
+                }
+            }
+
+            if (enemyModel != nullptr) {
+				combatSystem->setEnemyModel(enemyModel);
+            }
+
             combatSystem->startCombat();
         }
 

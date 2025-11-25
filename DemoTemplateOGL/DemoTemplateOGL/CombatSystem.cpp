@@ -6,9 +6,19 @@
 #include <cmath>
 #include <algorithm>
 
-CombatSystem::CombatSystem() : rng(std::random_device{}()), playerModel(nullptr), animationTimer(0.0), currentAnimationIndex(3),
-isPlayingActionAnimation(false), enemyTurnPending(false), enemyTurnTimer(0.0),
-playerDodgeChance(0.0f), playerCritBonus(0.0f)
+CombatSystem::CombatSystem() : rng(std::random_device{}()),
+playerModel(nullptr),
+animationTimer(0.0),
+currentAnimationIndex(3),
+isPlayingActionAnimation(false),
+enemyModel(nullptr),
+enemyIsPlayingActionAnimation(false),
+enemyAnimationTimer(0.0),
+enemyAttackToggle(false),
+enemyTurnPending(false),
+enemyTurnTimer(0.0),
+playerDodgeChance(0.0f),
+playerCritBonus(0.0f)
 {
     playerStats = { 100, 100, 20, 10, false, false };
     enemyStats = { 100, 100, 20, 10, false, false };
@@ -21,6 +31,13 @@ void CombatSystem::setPlayerModel(Model* model) {
     playerModel = model;
 }
 
+void CombatSystem::setEnemyModel(Model* model) {
+    this->enemyModel = model;
+    if (this->enemyModel != nullptr) {
+		this->enemyModel->setAnimation(1); // enemy combat idle
+    }
+}
+
 void CombatSystem::setPlayerAnimation(int animIndex) {
     if (playerModel != nullptr) {
         playerModel->setAnimation(animIndex);
@@ -28,18 +45,31 @@ void CombatSystem::setPlayerAnimation(int animIndex) {
     }
 }
 
+void CombatSystem::setEnemyAnimation(int animIndex) {
+    if (enemyModel != nullptr) {
+        enemyModel->setAnimation(animIndex);
+    }
+}
+
 void CombatSystem::updateAnimations(double deltaTime) {
-    if (!isPlayingActionAnimation) {
-        return;
+    // Player action animation timeout
+    if (isPlayingActionAnimation) {
+        animationTimer += deltaTime;
+        if (animationTimer >= 2000.0) {
+            setPlayerAnimation(3); // player combat idle
+            isPlayingActionAnimation = false;
+            animationTimer = 0.0;
+        }
     }
 
-    animationTimer += deltaTime;
-
-    // After 2 seconds (2000ms) return to combat idle
-    if (animationTimer >= 2000.0) {
-        setPlayerAnimation(3); // combat idle
-        isPlayingActionAnimation = false;
-        animationTimer = 0.0;
+    // Enemy action animation timeout
+    if (enemyIsPlayingActionAnimation) {
+        enemyAnimationTimer += deltaTime;
+        if (enemyAnimationTimer >= enemyActionAnimDurationMs) {
+            setEnemyAnimation(1); // enemy combat idle
+            enemyIsPlayingActionAnimation = false;
+            enemyAnimationTimer = 0.0;
+        }
     }
 }
 
@@ -51,9 +81,16 @@ void CombatSystem::startCombat() {
     lastActionLog = "¡Dense en la madre!";
 
     // initial combat state
-    setPlayerAnimation(3); // Idle de combate
+    setPlayerAnimation(3); // Idle de combate (player)
     isPlayingActionAnimation = false;
     animationTimer = 0.0;
+
+    // enemy base combat animation index 1
+    setEnemyAnimation(1);
+    enemyIsPlayingActionAnimation = false;
+    enemyAnimationTimer = 0.0;
+    enemyAttackToggle = false;
+
     enemyTurnPending = false;
     enemyTurnTimer = 0.0;
     playerDodgeChance = 0.0f;
@@ -71,7 +108,7 @@ void CombatSystem::executePlayerAction(CombatAction action) {
 
     switch (action) {
     case CombatAction::ATTACK: {
-        // Alternate between attack animations
+        // Alternate between attack animations for player
         static bool useAttack1 = true;
         int attackAnim = useAttack1 ? 4 : 5;
         setPlayerAnimation(attackAnim);
@@ -81,7 +118,6 @@ void CombatSystem::executePlayerAction(CombatAction action) {
         animationTimer = 0.0;
 
         std::uniform_int_distribution<> dist(1, 100);
-        // compute effective crit chance (base 210% + accumulated bonus up to 100%)
         int effectiveCritPercent = std::min(100, 10 + (int)std::round(playerCritBonus * 100.0f));
         bool isCritical = dist(rng) <= effectiveCritPercent;
 
@@ -96,12 +132,11 @@ void CombatSystem::executePlayerAction(CombatAction action) {
     case CombatAction::DEFEND: {
         playerStats.isDefending = true;
         log << "ME HAGO BOLITA";
-        setPlayerAnimation(3); // no special defend animation here
+        setPlayerAnimation(3);
         break;
     }
 
     case CombatAction::TAUNT: {
-        // increase player's crit bonus by TAUNT_INCREMENT up to MAX_CRIT_BONUS
         playerCritBonus = std::min(MAX_CRIT_BONUS, playerCritBonus + TAUNT_INCREMENT);
         log << "Ese wey voto por cheinbau! (Probabilidad de critico: " << (int)std::round(playerCritBonus * 100.0f) << "%)";
         setPlayerAnimation(3);
@@ -109,9 +144,7 @@ void CombatSystem::executePlayerAction(CombatAction action) {
     }
 
     case CombatAction::DODGE: {
-        // increase dodge chance (accumulates up to MAX_DODGE)
         playerDodgeChance = std::min(MAX_DODGE, playerDodgeChance + DODGE_INCREMENT);
-        // play dodge anim
         setPlayerAnimation(0);
         isPlayingActionAnimation = true;
         animationTimer = 0.0;
@@ -125,16 +158,14 @@ void CombatSystem::executePlayerAction(CombatAction action) {
     if (enemyStats.health <= 0) {
         lastActionLog += "\n¡Le diste en su madre!!";
         combatActive = false;
-        // return to normal idle when combat ends
         setPlayerAnimation(1);
         enemyTurnPending = false;
     }
     else {
-        // schedule enemy turn after delay; do NOT force idle here so action animation can play out
+        // schedule enemy turn after delay
         isPlayerTurn = false;
         enemyTurnPending = true;
         enemyTurnTimer = 0.0;
-        
     }
 }
 
@@ -156,19 +187,23 @@ void CombatSystem::enemyTurn() {
 
     switch (action) {
     case CombatAction::ATTACK: {
-        // Determine if player dodges using accumulated dodge chance (consumed once)
+        // Enemy attack animation: alternate between 2 and 3, then return to 1 after duration
+        enemyAttackToggle = !enemyAttackToggle;
+        int enemyAttackAnim = enemyAttackToggle ? 2 : 3;
+        setEnemyAnimation(enemyAttackAnim);
+        enemyIsPlayingActionAnimation = true;
+        enemyAnimationTimer = 0.0;
+
+        // Determine if player dodges using accumulated dodge chance
         if (playerDodgeChance > 0.0f) {
             std::uniform_real_distribution<float> roll(0.0f, 1.0f);
             float r = roll(rng);
             if (r <= playerDodgeChance) {
                 log << "¡Te mueves tan sabroso que lo esquivaste!";
-                // consume dodge chance after the enemy attempt (reset to 0)
                 //playerDodgeChance = 0.0f;
                 lastActionLog = log.str();
                 playerStats.isDodging = false;
-                // enemy action ends (no damage)
                 isPlayerTurn = true;
-                // ensure player returns to combat idle if not playing action anim
                 if (!isPlayingActionAnimation) setPlayerAnimation(3);
                 return;
             }
@@ -189,16 +224,23 @@ void CombatSystem::enemyTurn() {
     case CombatAction::DEFEND:
         enemyStats.isDefending = true;
         log << "El enemigo se hace bolita";
+        // keep enemy at combat idle visually
+        setEnemyAnimation(1);
+        enemyIsPlayingActionAnimation = false;
+        enemyAnimationTimer = 0.0;
         break;
 
     default:
         enemyStats.isDefending = true;
         log << "El enemigo no tiene tu tiempo...";
+        setEnemyAnimation(1);
+        enemyIsPlayingActionAnimation = false;
+        enemyAnimationTimer = 0.0;
         break;
     }
 
-    // After resolving enemy action, consume player's dodge chance (it applied/was available for this enemy action)
-   // playerDodgeChance = 0.0f;
+    // consume player's dodge chance after enemy action attempt
+    //playerDodgeChance = 0.0f;
 
     lastActionLog = log.str();
     playerStats.isDodging = false;
@@ -206,12 +248,11 @@ void CombatSystem::enemyTurn() {
     if (playerStats.health <= 0) {
         lastActionLog += "\n!Si bueno... quien tiene hambre?!";
         combatActive = false;
-        // return to normal idle
         setPlayerAnimation(1);
+        setEnemyAnimation(0);
     }
     else {
         isPlayerTurn = true;
-        // After enemy completes action, ensure player idle combat animation (unless playing own action)
         if (!isPlayingActionAnimation) {
             setPlayerAnimation(3);
         }
@@ -219,7 +260,7 @@ void CombatSystem::enemyTurn() {
 }
 
 void CombatSystem::update(double deltaTime) {
-    // update animations timer
+    // update animations timer (player + enemy)
     updateAnimations(deltaTime);
 
     if (!combatActive) return;
@@ -233,7 +274,6 @@ void CombatSystem::update(double deltaTime) {
             // perform enemy action now
             enemyTurn();
         }
-        // still waiting
         return;
     }
 
