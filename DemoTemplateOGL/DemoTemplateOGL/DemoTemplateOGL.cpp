@@ -15,6 +15,13 @@
 #include "Base/model.h"
 #include "Base/Scene.h"
 #include "Scenario.h"
+//imgui
+#include "imgui.h"
+#include "imgui_impl_win32.h"
+
+// *** IMPORTANTE: Decirle a ImGui que ya tenemos GLAD cargado ***
+#define IMGUI_IMPL_OPENGL_LOADER_GLAD
+#include "imgui_impl_opengl3.h"
 
 #define MAX_LOADSTRING 100
 #ifdef _WIN32 
@@ -29,6 +36,7 @@ GamePadRR* gamPad;                  // Manejador de gamepad
 // Funciones para activar OpenGL version > 2.0
 int prepareRenderWindow(HINSTANCE hInstance, int nCmdShow);
 bool SetUpPixelFormat(HDC hDC, PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB, PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB);
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 // Callback principal de la ventana en WINAPI
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 #else
@@ -166,6 +174,19 @@ int startGameEngine(void *ptrMsg){
     // -----------------------------
     glEnable(GL_DEPTH_TEST);
     glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+    // *** INICIALIZAR IMGUI ***
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+
+    // Estilo de ImGui (puedes cambiar a ImGui::StyleColorsClassic() o ImGui::StyleColorsLight())
+    ImGui::StyleColorsDark();
+
+    // Inicializar backends
+    ImGui_ImplWin32_Init(hWnd);
+    ImGui_ImplOpenGL3_Init("#version 330");
+
     gameTime.lastTick = get_nanos() / 1000000.0; // ms
     int totFrames = 0;
     double deltasCount = 0;
@@ -174,6 +195,11 @@ int startGameEngine(void *ptrMsg){
     while (isProgramRunning(ptrMsg)) {
         deltasCount += gameTime.deltaTime;
         totFrames++;
+        // *** NUEVO FRAME DE IMGUI ***
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplWin32_NewFrame();
+        ImGui::NewFrame();
+
         if (deltasCount >= 1000.0f){
             updateFPS(fps, totFrames);
             deltasCount -= 1000.0f;
@@ -182,6 +208,29 @@ int startGameEngine(void *ptrMsg){
         updatePosCords(coordenadas);
         GameActions actions;
         actions.jump = &jump;
+
+        // *** CREAR UI DE IMGUI ***
+        {
+            ImGui::Begin("Debug Menu");
+
+            ImGui::Text("FPS: %d", totFrames);
+            ImGui::Separator();
+
+            ImGui::Checkbox("Show Hitboxes", &showHitbox);
+            ImGui::Checkbox("Show Stats", &showStats);
+            ImGui::Separator();
+
+            ImGui::Text("Player Position:");
+            glm::vec3* pos = OGLobj->getMainModel()->getTranslate();
+            ImGui::Text("  X: %.2f", pos->x);
+            ImGui::Text("  Y: %.2f", pos->y);
+            ImGui::Text("  Z: %.2f", pos->z);
+            ImGui::Separator();
+
+            ImGui::Text("Monedas: %d/3", contadorMonedas);
+
+            ImGui::End();
+        }
         // render
         // ------
         bool checkCollition = checkInput(&actions, OGLobj);
@@ -199,13 +248,18 @@ int startGameEngine(void *ptrMsg){
             INFO("Total de monedas: " + std::to_string(contadorMonedas), "MONEDAS");
         }
 
-        Scene *escena = OGLobj->Render();
+        Scene* escena = OGLobj->Render();
         if (escena != OGLobj) {
             delete OGLobj;
             OGLobj = escena;
             OGLobj->getLoadedText()->emplace_back(fps);
             OGLobj->getLoadedText()->emplace_back(coordenadas);
         }
+
+        // *** RENDERIZAR IMGUI ***
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         swapGLBuffers();
     }
     model = OGLobj->getMainModel();
@@ -214,6 +268,12 @@ int startGameEngine(void *ptrMsg){
     if (model != NULL) delete model;
     if (fps != NULL) delete fps;
     if (coordenadas != NULL) delete coordenadas;
+
+    // *** CLEANUP IMGUI ***
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplWin32_Shutdown();
+    ImGui::DestroyContext();
+
     font_atlas::clearInstance();
     return finishProgram(ptrMsg);
 }
@@ -291,6 +351,10 @@ bool checkInput(GameActions *actions, Scene* scene) {
 //
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+	// ImGui event handler
+    if (ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam))
+		return true;
+
     switch (message) {
         case WM_CREATE: {
             RECT rect;

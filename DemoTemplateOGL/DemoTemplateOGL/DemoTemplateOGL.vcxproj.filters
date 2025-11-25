@@ -34,6 +34,12 @@
     <Filter Include="Source Files\InputDevices">
       <UniqueIdentifier>{0eea53f6-0af1-4560-8dd9-2a63c5bc4608}</UniqueIdentifier>
     </Filter>
+    <Filter Include="imgui">
+      <UniqueIdentifier>{f8276f50-f0e8-405c-abdd-0345bb5fbfd5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="imgui\backends">
+      <UniqueIdentifier>{db27124e-3a9f-45a5-b0cb-4ebf8e1d129a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Scenario.h">
@@ -129,6 +135,33 @@
     <ClInclude Include="Billboard2DAnimation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\ExternalResources\imgui\imconfig.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ExternalResources\imgui\imgui.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ExternalResources\imgui\imgui_internal.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ExternalResources\imgui\imstb_rectpack.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ExternalResources\imgui\imstb_textedit.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ExternalResources\imgui\imstb_truetype.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ExternalResources\imgui\backends\imgui_impl_opengl3.h">
+      <Filter>imgui\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ExternalResources\imgui\backends\imgui_impl_win32.h">
+      <Filter>imgui\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ExternalResources\imgui\imgui_impl_opengl3_loader.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DemoTemplateOGL.cpp">
@@ -175,6 +208,27 @@
     </ClCompile>
     <ClCompile Include="CollitionBox.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ExternalResources\imgui\imgui.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ExternalResources\imgui\imgui_demo.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ExternalResources\imgui\imgui_draw.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ExternalResources\imgui\imgui_tables.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ExternalResources\imgui\imgui_widgets.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ExternalResources\imgui\backends\imgui_impl_opengl3.cpp">
+      <Filter>imgui\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ExternalResources\imgui\backends\imgui_impl_win32.cpp">
+      <Filter>imgui\backends</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
