@@ -4,6 +4,7 @@
 #define wcscpy_s(x,y,z) wcscpy(x,z)
 #define wcscat_s(x,y,z) wcscat(x,z)
 #endif
+#include <random>
 
 Scenario::Scenario(Camera *cam) {
     glm::vec3 translate;
@@ -35,13 +36,14 @@ void Scenario::InitGraph(Model *main) {
 	//creamos el objeto skydome
 	sky = new SkyDome(32, 32, 20, (WCHAR*)L"skydome/earth3.png", main->cameraDetails);
 	//creamos el terreno
-	terreno = new Terreno((WCHAR*)L"skydome/terreno2.jpg", (WCHAR*)L"skydome/texterr.jpg", 400, 400, main->cameraDetails);
-	water = new Water((WCHAR*)L"textures/terreno.bmp", (WCHAR*)L"textures/water.bmp", 5, 5, camara->cameraDetails);
+	terreno = new Terreno((WCHAR*)L"skydome/terreno2.jpg", (WCHAR*)L"skydome/texterr.jpg", 5000, 5000, main->cameraDetails);
+	water = new Water((WCHAR*)L"textures/terreno.bmp", (WCHAR*)L"textures/water.bmp", 10, 10, camara->cameraDetails);
 	glm::vec3 translate;
 	glm::vec3 scale;
 	glm::vec3 rotation;
-	translate = glm::vec3(80.0f, 1.0f, 40.0f);
+	translate = glm::vec3(139.0f, 1.0f, -40.0f);
 	water->setTranslate(&translate);
+	
 	scale = glm::vec3(1.0f, 1.0f, 1.0f);
 	water->setScale(&scale);
 	// load models
@@ -79,8 +81,8 @@ void Scenario::InitGraph(Model *main) {
 	escalaY=escalaX=escalaZ = 4.0f;
 	scale = glm::vec3(escalaX, escalaY, escalaZ);
 	float alturaMoneda = 1.0f * escalaY; // Altura real del modelo en Blender es 1.0, si fuera 2.0 se pondria 2.0, etc
-	posX = 50.0f;
-	posZ = -10.0f;
+	posX = 136.0f;
+	posZ = -50.0f;
 	//IMPORTANTE ESTABLECER EL VALOR DE POSX Y POSZ ANTES DE CALCULAR POSY
 	//Si quiero evitar hacer lo de abajo, podria cambiar el origen del modelo en Blender
 	posY = terreno->Superficie(posX, posZ)+(alturaMoneda/2.0f); //Dividimos entre 2 la altura porque el origen del modelo esta en el centro
@@ -96,7 +98,8 @@ void Scenario::InitGraph(Model *main) {
 	m.setScale(&scale);
 	m.setTranslate(&translate);
 	m.setNextTranslate(&translate);
-	m.translate.x = 55;
+	m.translate.x = 125;
+	m.translate.z = 136;
 	model = CollitionBox::GenerateAABB(m.translate, moneda->AABBsize, main->cameraDetails);
 	model->setTranslate(&m.translate);
 	model->setNextTranslate(&m.translate);
@@ -104,20 +107,30 @@ void Scenario::InitGraph(Model *main) {
 	moneda->getModelAttributes()->push_back(m);
 	//SEGUNDO CLON DE MONEDA
 	m.translate.x = 60;
+	m.translate.z = 35;
 	model = CollitionBox::GenerateAABB(m.translate, moneda->AABBsize, main->cameraDetails);
 	model->setTranslate(&m.translate);
 	model->setNextTranslate(&m.translate);
 	m.hitbox = model; // Le decimos al ultimo ModelAttribute que tiene un hitbox asignado
 	moneda->getModelAttributes()->push_back(m);
 	
+	// random generator for placements
+	std::random_device rd;
+	std::mt19937 rng(rd());
+	std::uniform_int_distribution<int> coin(0, 1);
 
 	//CARGAMOS EL VOCHO
 	Model* vocho = new Model("models/Vocho/vocho.fbx", main->cameraDetails);
 	escalaX = escalaY = escalaZ = 0.5f;
 	scale = glm::vec3(escalaX, escalaY, escalaZ);
-	posX = 30.0f;
-	posZ = -10.0f;
-	posY = terreno->Superficie(posX, posZ);
+	// choose between (64,0,25) or (64,0,118)
+	if (coin(rng) == 0) {
+		posX = 64.0f; posZ = 25.0f; posY = terreno->Superficie(posX, posZ) + 0.0f;
+	}
+	else {
+		posX = 64.0f; posZ = 118.0f; posY = terreno->Superficie(posX, posZ) + 0.0f;
+	}
+	
 	translate = glm::vec3(posX, posY, posZ);
 	vocho->setTranslate(&translate);
 	vocho->setNextTranslate(&translate);
@@ -128,8 +141,13 @@ void Scenario::InitGraph(Model *main) {
 	Model* carro = new Model("models/Carro/carro.fbx", main->cameraDetails);
 	escalaX = escalaY = escalaZ = 3.0f;
 	scale = glm::vec3(escalaX, escalaY, escalaZ);
-	posX = 20.0f;
-	posZ = -10.0f;
+	// choose between (63,0,3) or (63,0,0)
+	if (coin(rng) == 0) {
+		posX = 63.0f; posZ = 3.0f; posY = terreno->Superficie(posX, posZ) + 0.0f;
+	}
+	else {
+		posX = 63.0f; posZ = 0.0f; posY = terreno->Superficie(posX, posZ) + 0.0f;
+	}
 	posY = terreno->Superficie(posX, posZ);
 	translate = glm::vec3(posX, posY, posZ);
 	carro->setTranslate(&translate);
@@ -141,9 +159,13 @@ void Scenario::InitGraph(Model *main) {
 	Model* perro = new Model("models/Perro/perroIdle.fbx", main->cameraDetails);
 	escalaX = escalaY = escalaZ = 0.04f;
 	scale = glm::vec3(escalaX, escalaY, escalaZ);
-	posX = 10.0f;
-	posZ = -10.0f;
-	posY = terreno->Superficie(posX, posZ);
+	// choose between (54,15,-30) or (102,22,-40)
+	if (coin(rng) == 0) {
+		posX = 54.0f; posZ = -30.0f; posY = terreno->Superficie(posX, posZ) + 15.0f;
+	}
+	else {
+		posX = 102.0f; posZ = -40.0f; posY = terreno->Superficie(posX, posZ) + 22.0f;
+	}
 	translate = glm::vec3(posX, posY, posZ);
 	perro->setTranslate(&translate);
 	perro->setNextTranslate(&translate);
@@ -158,14 +180,19 @@ void Scenario::InitGraph(Model *main) {
 	catch (...) {
 		ERRORL("Could not load animation!", "ANIMACION");
 	}
-	
+	//ELIMINAR HITBOX
+	if (perro->getModelAttributes()->at(0).hitbox != NULL) {
+		Model* AABB = (Model*)perro->getModelAttributes()->at(0).hitbox;
+		delete AABB;
+		perro->getModelAttributes()->at(0).hitbox = NULL;
+	}
 
 	//CARGAMOS EL BOTE DE BASURA
 	Model* basura = new Model("models/Basura/basura.fbx", main->cameraDetails);
 	escalaX = escalaY = escalaZ = 2.0f;
 	scale = glm::vec3(escalaX, escalaY, escalaZ);
-	posX = 0.0f;
-	posZ = -10.0f;
+	posX = 61.0f;
+	posZ = -47.0f;
 	posY = terreno->Superficie(posX, posZ);
 	translate = glm::vec3(posX, posY, posZ);
 	basura->setTranslate(&translate);
@@ -177,27 +204,30 @@ void Scenario::InitGraph(Model *main) {
 	Model* casa1 = new Model("models/casa1/casa1.fbx", main->cameraDetails);
 	escalaX = escalaY = escalaZ = 15.0f;
 	scale = glm::vec3(escalaX, escalaY, escalaZ);
-	posX = -20.0f;
-	posZ = -10.0f;
+	posX = 54.0f;
+	posZ = -30.0f;
 	posY = terreno->Superficie(posX, posZ);
 	translate = glm::vec3(posX, posY, posZ);
 	casa1->setTranslate(&translate);
 	casa1->setNextTranslate(&translate);
 	casa1->setScale(&scale);
 	casa1->setNextRotX(-90);
+	casa1->setNextRotZ(90);
 	ourModel.emplace_back(casa1);
+	
 
 	//CARGAMOS LA CASA2
 	Model* casa2 = new Model("models/casa2/casa2.fbx", main->cameraDetails);
 	escalaX = escalaY = escalaZ = 10.0f;
 	scale = glm::vec3(escalaX, escalaY, escalaZ);
-	posX = -50.0f;
-	posZ = -10.0f;
+	posX = 110.0f;
+	posZ = -40.0f;
 	posY = terreno->Superficie(posX, posZ);
 	translate = glm::vec3(posX, posY, posZ);
 	casa2->setScale(&scale);
 	casa2->setNextRotX(180);
-	casa2->setNextRotY(90);
+	casa2->setNextRotY(180);
+	
 	casa2->setTranslate(&translate);
 	casa2->setNextTranslate(&translate);
 	ourModel.emplace_back(casa2);
@@ -206,43 +236,30 @@ void Scenario::InitGraph(Model *main) {
 	Model* casa3 = new Model("models/casa3/casa3.fbx", main->cameraDetails);
 	escalaX = escalaY = escalaZ = 10.0f;
 	scale = glm::vec3(escalaX, escalaY, escalaZ);
-	posX = -50.0f;
-	posZ = 40.0f;
+	posX = 120.0f;
+	posZ = 111.0f;
 	posY = terreno->Superficie(posX, posZ);
 	translate = glm::vec3(posX, posY, posZ);
 	casa3->setScale(&scale);
 	casa3->setNextRotX(-90);
-	casa3->setNextRotZ(90);
+	casa3->setNextRotZ(0);
 	casa3->setTranslate(&translate);
 	casa3->setNextTranslate(&translate);
 	ourModel.emplace_back(casa3);
 
-	//CARGAMOS EL OXXO
-	Model* oxxo = new Model("models/FachadaOxxo/fachadaOxxo.fbx", main->cameraDetails);
-	escalaX = escalaY = escalaZ = 2.0f;
-	scale = glm::vec3(escalaX, escalaY, escalaZ);
-	posX = -10.0f;
-	posZ = 40.0f;
-	posY = terreno->Superficie(posX, posZ);
-	translate = glm::vec3(posX, posY, posZ);
-	oxxo->setScale(&scale);
-	oxxo->setNextRotX(-90);
-	oxxo->setNextRotZ(180);
-	oxxo->setTranslate(&translate);
-	oxxo->setNextTranslate(&translate);
-	ourModel.emplace_back(oxxo);
+	
 
 	//CARGAMOS EL LETRERO DEL OXXO
 	Model* letreroOxxo = new Model("models/LetreroOxxo/letreroOxxo.fbx", main->cameraDetails);
 	escalaX = escalaY = escalaZ = 2.0f;
 	scale = glm::vec3(escalaX, escalaY, escalaZ);
-	posX = 20.0f;
-	posZ = 40.0f;
+	posX = 104.0f;
+	posZ = 0.0f;
 	posY = terreno->Superficie(posX, posZ);
 	translate = glm::vec3(posX, posY, posZ);
 	letreroOxxo->setScale(&scale);
 	letreroOxxo->setNextRotX(-90);
-	letreroOxxo->setNextRotZ(180);
+	letreroOxxo->setNextRotZ(90);
 	letreroOxxo->setTranslate(&translate);
 	letreroOxxo->setNextTranslate(&translate);
 	ourModel.emplace_back(letreroOxxo);
@@ -251,12 +268,13 @@ void Scenario::InitGraph(Model *main) {
 	Model* tacos = new Model("models/Tacos/tacos.fbx", main->cameraDetails);
 	escalaX = escalaY = escalaZ = 2.0f;
 	scale = glm::vec3(escalaX, escalaY, escalaZ);
-	posX = 40.0f;
-	posZ = 40.0f;
+	posX = 57.0f;
+	posZ = 47.0f;
 	posY = terreno->Superficie(posX, posZ);
 	translate = glm::vec3(posX, posY, posZ);
 	tacos->setScale(&scale);
 	tacos->setNextRotX(-90);
+	tacos->setNextRotZ(-90);
 	tacos->setTranslate(&translate);
 	tacos->setNextTranslate(&translate);
 	ourModel.emplace_back(tacos);
@@ -265,12 +283,12 @@ void Scenario::InitGraph(Model *main) {
 	Model* enemigo = new Model("models/Enemigo/enemigoanimado.fbx", main->cameraDetails);
 	escalaX = escalaY = escalaZ = 0.02f;
 	scale = glm::vec3(escalaX, escalaY, escalaZ);
-	posX = 60.0f;
-	posZ = 40.0f;
+	posX = 123.0f;
+	posZ = 75.0f;
 	posY = terreno->Superficie(posX, posZ);
 	translate = glm::vec3(posX, posY, posZ);
 	enemigo->setScale(&scale);
-	enemigo->setNextRotY(180);
+	enemigo->setNextRotY(-90);
 	enemigo->setTranslate(&translate);
 	enemigo->setNextTranslate(&translate);
 	enemigo->setModelType("Enemigo"); 
@@ -289,13 +307,14 @@ void Scenario::InitGraph(Model *main) {
 	Model* telefono = new Model("models/Telefono/telefono.fbx", main->cameraDetails);
 	escalaX = escalaY = escalaZ = 2.0f;
 	scale = glm::vec3(escalaX, escalaY, escalaZ);
-	posX = 70.0f;
-	posZ = 40.0f;
+	posX = 108.0f;
+	posZ = -10.0f;
 	posY = terreno->Superficie(posX, posZ);
 	translate = glm::vec3(posX, posY, posZ);
 	telefono->setScale(&scale);
 	telefono->setNextRotY(180);
 	telefono->setNextRotX(90);
+	telefono->setNextRotZ(90);
 	telefono->setTranslate(&translate);
 	telefono->setNextTranslate(&translate);
 	ourModel.emplace_back(telefono);
@@ -304,8 +323,8 @@ void Scenario::InitGraph(Model *main) {
 	Model* alberca = new Model("models/Alberca/alberca.fbx", main->cameraDetails);
 	escalaX = escalaY = escalaZ = 1.5f;
 	scale = glm::vec3(escalaX, escalaY, escalaZ);
-	posX = 80.0f;
-	posZ = 40.0f;
+	posX = 139.0f;
+	posZ = -40.0f;
 	posY = terreno->Superficie(posX, posZ);
 	translate = glm::vec3(posX, posY, posZ);
 	alberca->setScale(&scale);
@@ -316,16 +335,17 @@ void Scenario::InitGraph(Model *main) {
 	ourModel.emplace_back(alberca);
 
 	//CARGAMOS EL OXXO (ACCESIBLE)
-	Model* oxxoAcc = new Model("models/OxxoInterior/OxxoInterior3.fbx", main->cameraDetails);
+	Model* oxxoAcc = new Model("models/OxxoInterior/OxxoInterior4.fbx", main->cameraDetails);
 	escalaX = escalaY = escalaZ = 0.5f;
 	scale = glm::vec3(escalaX, escalaY, escalaZ);
-	posX = 150.0f;
-	posZ = 40.0f;
+	posX = 115.0f;
+	posZ = 35.0f;
 	posY = terreno->Superficie(posX, posZ);
 	translate = glm::vec3(posX, posY, posZ);
 	oxxoAcc->setScale(&scale);
 	oxxoAcc->setNextRotY(180);
 	oxxoAcc->setNextRotX(90);
+	oxxoAcc->setNextRotZ(90);
 	oxxoAcc->setTranslate(&translate);
 	oxxoAcc->setNextTranslate(&translate);
 	ourModel.emplace_back(oxxoAcc);
@@ -338,25 +358,27 @@ void Scenario::InitGraph(Model *main) {
 	
 	Node nodoWall = oxxoAcc->AABBsize;
 	//pared 1
-	nodoWall.m_center.x = 18;
+	nodoWall.m_center.x = 13;
 	nodoWall.m_center.y = 1;
 	nodoWall.m_center.z = 1;
 	nodoWall.m_halfWidth = 1;
-	nodoWall.m_halfHeight = 10;
-	nodoWall.m_halfDepth = 10;
+	nodoWall.m_halfHeight = 20;
+	nodoWall.m_halfDepth = 20;
 	model = CollitionBox::GenerateAABB(translate, nodoWall, main->cameraDetails);
 	m.hitbox = model;
 	m.active = false;
 	oxxoAcc->getModelAttributes()->push_back(m);
 	
 	//pared2
-	nodoWall.m_center.x = -20;
-	nodoWall.m_halfDepth = 15;
+	nodoWall.m_center.x = 1;
+	nodoWall.m_center.z = -17;
+	nodoWall.m_halfDepth = 1;
+	nodoWall.m_halfWidth = 20;
+	nodoWall.m_halfHeight = 10;
 	model = CollitionBox::GenerateAABB(translate, nodoWall, main->cameraDetails);
 	m.hitbox = model;
 	m.active = false;
 	oxxoAcc->getModelAttributes()->push_back(m);
-
 	//pared 3
 	nodoWall.m_center.x = 1;
 	nodoWall.m_center.z = 17;
@@ -365,6 +387,7 @@ void Scenario::InitGraph(Model *main) {
 	nodoWall.m_halfHeight = 10;
 	model = CollitionBox::GenerateAABB(translate, nodoWall, main->cameraDetails);
 	m.hitbox = model;
+	
 	m.active = false;
 	oxxoAcc->getModelAttributes()->push_back(m);
 	

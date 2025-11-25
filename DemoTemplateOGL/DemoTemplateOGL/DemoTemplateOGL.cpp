@@ -386,8 +386,8 @@ int startGameEngine(void *ptrMsg){
 
         //COMPROBAR ZONA Y MONEDAS PARAA DIALOGO
         if (contadorMonedas == 3 && dialogoActual != DIALOGO_BUSCA_VENDEDOR) {
-            float targetX = 150.0f;
-            float targetZ = 38.0f;
+            float targetX = 115.0f;
+            float targetZ = 35.0f;
             float activationRadius = 5.0f;
 
             float distanceX = model->getTranslate()->x - targetX;
