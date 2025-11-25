@@ -262,8 +262,8 @@ void Scenario::InitGraph(Model *main) {
 	ourModel.emplace_back(tacos);
 
 	//CARGAMOS EL ENEMIGOIDLE
-	Model* enemigo = new Model("models/Enemigo/enemigoIdle.fbx", main->cameraDetails);
-	escalaX = escalaY = escalaZ = 0.02f;
+	Model* enemigo = new Model("models/Enemigo/enemigo2.fbx", main->cameraDetails);
+	escalaX = escalaY = escalaZ = 1.0f;
 	scale = glm::vec3(escalaX, escalaY, escalaZ);
 	posX = 60.0f;
 	posZ = 40.0f;
@@ -275,7 +275,7 @@ void Scenario::InitGraph(Model *main) {
 	enemigo->setNextTranslate(&translate);
 	enemigo->setModelType("Enemigo"); 
 	ourModel.emplace_back(enemigo);
-	try {
+	/*try {
 		std::vector<Animation> animations = Animation::loadAllAnimations("models/Enemigo/enemigoIdle.fbx", enemigo->GetBoneInfoMap(), enemigo->getBonesInfo(), enemigo->GetBoneCount());
 		for (Animation animation : animations)
 			enemigo->setAnimator(Animator(animation));
@@ -283,7 +283,7 @@ void Scenario::InitGraph(Model *main) {
 	}
 	catch (...) {
 		ERRORL("Could not load animation!", "ANIMACION");
-	}
+	}*/
 
 	//CARGAMOS EL TELEFONO PUBLICO
 	Model* telefono = new Model("models/Telefono/telefono.fbx", main->cameraDetails);

@@ -159,18 +159,57 @@ int startGameEngine(void *ptrMsg){
     translate = glm::vec3(5.0f, 10.0f, -5.0f);
     //5, ye - 1,-5
     Camera* camera = Camera::getInstance();
-    Model* model = new Model("models/Calaca/CalacaWalking.fbx", translate, camera);
+    Model* model = new Model("models/Calaca/CalacaChida.fbx", translate, camera);
     model->setTranslate(&translate);
     camera->setFront(v);
-    camera->setCharacterHeight(4.0);
-    scale = glm::vec3(0.03f, 0.03f,0.03f);	// it's a bit too big for our scene, so scale it down
+    camera->setCharacterHeight(5.0);
+    scale = glm::vec3(0.02f, 0.02f, 0.02f);
     model->setScale(&scale);
     model->setTranslate(&translate);
+
+    // ✅ CREAR HITBOX PERSONALIZADO
+    Node nodoCalaca = model->AABBsize;
+
+    // Ajustar tamaño del hitbox (puedes modificar estos valores)
+    nodoCalaca.m_halfWidth = 1.0f;   // Ancho del hitbox
+    nodoCalaca.m_halfHeight = 1.0f;  // Alto del hitbox
+    nodoCalaca.m_halfDepth = 1.0f;   // Profundidad del hitbox
+    nodoCalaca.m_center = glm::vec4(0, 1.5f, 0,1.0f); // Centro relativo al modelo
+
+    // Eliminar hitbox automático si existe
+    if (model->getModelAttributes()->size() > 0 &&
+        model->getModelAttributes()->at(0).hitbox != NULL) {
+        Model* oldAABB = (Model*)model->getModelAttributes()->at(0).hitbox;
+        delete oldAABB;
+        model->getModelAttributes()->at(0).hitbox = NULL;
+    }
+
+    // Generar nuevo hitbox personalizado
+    Model* hitboxCalaca = CollitionBox::GenerateAABB(translate, nodoCalaca, camera);
+
+    // Asignar el hitbox al modelo
+    if (model->getModelAttributes()->size() == 0) {
+        ModelAttributes attr;
+        attr.hitbox = hitboxCalaca;
+        attr.setTranslate(&translate);
+        attr.setNextTranslate(&translate);
+        model->getModelAttributes()->push_back(attr);
+    }
+    else {
+        model->getModelAttributes()->at(0).hitbox = hitboxCalaca;
+    }
+
+    // ✅ CARGAR ANIMACIONES (DESPUÉS de configurar el hitbox)
     try {
-        std::vector<Animation> animations = Animation::loadAllAnimations("models/Calaca/CalacaWalking.fbx", model->GetBoneInfoMap(), model->getBonesInfo(), model->GetBoneCount());
+        std::vector<Animation> animations = Animation::loadAllAnimations(
+            "models/Calaca/CalacaChida.fbx",
+            model->GetBoneInfoMap(),
+            model->getBonesInfo(),
+            model->GetBoneCount()
+        );
         for (Animation animation : animations)
             model->setAnimator(Animator(animation));
-        model->setAnimation(0);
+        model->setAnimation(1);
     }
     catch (...) {
         ERRORL("Could not load animation!", "ANIMACION");
@@ -259,6 +298,7 @@ int startGameEngine(void *ptrMsg){
         }
 
         if (combatSystem && combatSystem->isCombatActive() && dialogoActual == DIALOGO_NONE) {
+			combatSystem->update(gameTime.deltaTime);
             MostrarCombate(combatSystem);
         }
 
@@ -368,6 +408,7 @@ int startGameEngine(void *ptrMsg){
             if (combatSystem == nullptr) {
                 combatSystem = new CombatSystem();
             }
+            combatSystem->setPlayerModel(model);
             combatSystem->startCombat();
         }
 
@@ -401,15 +442,20 @@ int startGameEngine(void *ptrMsg){
     return finishProgram(ptrMsg);
 }
 
-bool checkInput(GameActions *actions, Scene* scene) {
+bool checkInput(GameActions* actions, Scene* scene) {
     bool changeAnimation = false;
-    if (gamePadEvents(actions)){
-    } else {
+    if (gamePadEvents(actions)) {
+    }
+    else {
         mouseActions();
         KeysEvents(actions);
     }
     Model* OGLobj = scene->getMainModel();
-    if (actions->displayHitboxStats){
+
+    // ✅ **DETECTAR SI EL PERSONAJE SE ESTÁ MOVIENDO**
+    bool isMoving = (actions->advance != 0 || actions->hAdvance != 0);
+
+    if (actions->displayHitboxStats) {
         showHitbox = !showHitbox;
         showStats = !showStats;
     }
@@ -421,29 +467,23 @@ bool checkInput(GameActions *actions, Scene* scene) {
     }
     if (actions->hAdvance != 0) {
         glm::vec3 pos = *OGLobj->getTranslate();
-        pos.x += actions->hAdvance * (3 * gameTime.deltaTime/100) * glm::cos(glm::radians(OGLobj->getRotY()));
+        pos.x += actions->hAdvance * (3 * gameTime.deltaTime / 100) * glm::cos(glm::radians(OGLobj->getRotY()));
         pos.z += actions->hAdvance * (3 * gameTime.deltaTime / 100) * glm::sin(glm::radians(OGLobj->getRotY()));
-        // Posicionamos la camara/modelo pixeles arriba de su posicion en el terreno
-//        pos.y = *actions->jump > 0 ? pos.y : scene->getTerreno()->Superficie(pos.x, pos.z);
-
         OGLobj->setNextTranslate(&pos);
     }
     if (actions->advance != 0) {
         glm::vec3 pos = *OGLobj->getTranslate();
         pos.x += actions->advance * (3 * gameTime.deltaTime / 100) * glm::sin(glm::radians(OGLobj->getRotY()));
         pos.z += actions->advance * (3 * gameTime.deltaTime / 100) * glm::cos(glm::radians(OGLobj->getRotY()));
-        // Posicionamos la camara/modelo pixeles arriba de su posicion en el terreno
-//        pos.y = *actions->jump > 0 ? pos.y : scene->getTerreno()->Superficie(pos.x, pos.z);
         OGLobj->setNextTranslate(&pos);
     }
-    if (*actions->jump > 0){
+    if (*actions->jump > 0) {
         glm::vec3 pos = *OGLobj->getNextTranslate();
         double del = (*actions->jump) * gameTime.deltaTime / 100;
         pos.y += del;
         (*actions->jump) -= del;
         if (*actions->jump < 0.01f)
             *actions->jump = 0.0f;
-        // Posicionamos la camara/modelo pixeles arriba de su posicion en el terreno
         OGLobj->setNextTranslate(&pos);
     }
     if (actions->getAngle() != NULL) {
@@ -457,6 +497,17 @@ bool checkInput(GameActions *actions, Scene* scene) {
     }
     if (actions->getPlayerZoom() != NULL) {
         OGLobj->cameraDetails->calculateZoomPlayer(*actions->getPlayerZoom() * (6 * gameTime.deltaTime / 100));
+    }
+
+    
+
+    if (!(combatSystem && combatSystem->isCombatActive())) {
+        if (isMoving) {
+            OGLobj->setAnimation(2); // caminar
+        }
+        else {
+            OGLobj->setAnimation(1); // idle normal
+        }
     }
 
     return true; // siempre buscar colision
@@ -845,18 +896,17 @@ void MostrarCombate(CombatSystem* combat) {
 
     ImGuiIO& io = ImGui::GetIO();
 
-    // --- Posicionar abajo, estilo HUD ---
-    float width = io.DisplaySize.x * 0.9f;   // 90% ancho pantalla
-    float height = 0;                        // AutoResize manejará height
-    float posX = (io.DisplaySize.x - width) * 0.5f;
-    float posY = io.DisplaySize.y - 250;     // Ajusta segun gusto
+    
+    float width = 720.0f;  
+    float posX = (io.DisplaySize.x - width) * 0.5f;  
+    float posY = io.DisplaySize.y - 230;  
 
     ImGui::SetNextWindowPos(ImVec2(posX, posY), ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(width, height), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(width, 0), ImGuiCond_Always); 
 
     ImGuiWindowFlags flags =
-        ImGuiWindowFlags_NoResize |
-        ImGuiWindowFlags_AlwaysAutoResize |
+        ImGuiWindowFlags_NoResize |           
+        ImGuiWindowFlags_AlwaysAutoResize |   
         ImGuiWindowFlags_NoCollapse |
         ImGuiWindowFlags_NoMove |
         ImGuiWindowFlags_NoTitleBar |
@@ -896,6 +946,7 @@ void MostrarCombate(CombatSystem* combat) {
 
     ImGui::End();
 }
+
 
 
 

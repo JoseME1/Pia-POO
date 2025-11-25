@@ -1,55 +1,78 @@
+﻿
 #pragma once
 #include <string>
+#include <random>
+
+// Forward declaration
+class Model;
 
 enum class CombatAction {
-	ATTACK,
-	DEFEND,
-	TAUNT,
-	DODGE
+    ATTACK,
+    DEFEND,
+    TAUNT,
+    DODGE
 };
 
 struct CombatStats {
-	int health;
-	int maxHealth;
-	float critChance; //0.0 to 1.0
-	float dodgeChance; //0.0 to 1.0
-	float defenseActive; //0.0 to 1.0
-
-	CombatStats() : health(100), maxHealth(100), critChance(0.1f), dodgeChance(0.1f), defenseActive(0.0f) {}
+    int health;
+    int maxHealth;
+    int attack;
+    int defense;
+    bool isDefending;
+    bool isDodging;
 };
 
 class CombatSystem {
 private:
-	CombatStats playerStats;
-	CombatStats enemyStats;
-	bool isPlayerTurn;
-	std::string lastActionLog;
-	bool combatActive;
+    CombatStats playerStats;
+    CombatStats enemyStats;
+    bool combatActive;
+    bool isPlayerTurn;
+    std::string lastActionLog;
+    std::mt19937 rng;
 
-	int calculateDamage(int baseDamage, float critChance, float defenseReduction);
-	bool checkDodge(float dodgeChance);
-	void applyPlayerAction(CombatAction action);
-	void enemyTurn();
-	void resetTemporaryEffects();
+    // ✅ NUEVO: Soporte para animaciones
+    Model* playerModel;
+    double animationTimer;
+    int currentAnimationIndex;
+    bool isPlayingActionAnimation;
+
+    // ✅ NUEVO: enemy turn delay
+    bool enemyTurnPending;
+    double enemyTurnTimer;
+    static constexpr double enemyTurnDelayMs = 1500.0; // 1.5 seconds
+
+    // ✅ NUEVO: accumulated mechanics
+    float playerDodgeChance;       // accumulated dodge chance, consumed on next enemy action (max 40%)
+    float playerCritBonus;         // accumulated crit bonus, persistent (max 100%)
+    static constexpr float DODGE_INCREMENT = 0.15f;   // +20% per dodge action
+    static constexpr float MAX_DODGE = 0.50f;         // cap 40%
+    static constexpr float TAUNT_INCREMENT = 0.10f;  // +10% crit per taunt
+    static constexpr float MAX_CRIT_BONUS = 1.0f;    // cap 100%
+
+    void enemyTurn();
+    int calculateDamage(const CombatStats& attacker, const CombatStats& defender, bool isCritical);
+    CombatAction getRandomEnemyAction();
+
+    // ✅ NUEVO: Control de animaciones
+    void setPlayerAnimation(int animIndex);
+    void updateAnimations(double deltaTime);
 
 public:
-	CombatSystem();
+    CombatSystem();
+    void startCombat();
+    void executePlayerAction(CombatAction action);
+    void update(double deltaTime);
 
-	//Iniciar/Terminar combate
-	void startCombat();
-	void endCombat();
+    bool isCombatActive() const;
+    bool isPlayerAlive() const;
+    bool isEnemyAlive() const;
+    bool getIsPlayerTurn() const;
 
-	//Acciones del jugador
-	void executePlayerAction(CombatAction action);
+    CombatStats getPlayerStats() const;
+    CombatStats getEnemyStats() const;
+    std::string getLastActionLog() const;
 
-	//Getters
-	bool isCombatActive() const { return combatActive; }
-	bool isPlayerAlive() const { return playerStats.health>0; }
-	bool isEnemyAlive() const { return enemyStats.health>0; }
-	const CombatStats& getPlayerStats() const { return playerStats; }
-	const CombatStats& getEnemyStats() const { return enemyStats; }
-	std::string getLastActionLog() const { return lastActionLog; }
-	bool getIsPlayerTurn() const { return isPlayerTurn; }
-
-
+    // ✅ NUEVO: Configurar el modelo del jugador
+    void setPlayerModel(Model* model);
 };
