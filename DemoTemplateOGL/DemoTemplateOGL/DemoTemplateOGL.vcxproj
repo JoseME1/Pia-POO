@@ -117,7 +117,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\..\ExternalResources\glad\include\;$(SolutionDir)\..\ExternalResources\glm\;$(SolutionDir)\..\ExternalResources\x64-windows\include\;$(SolutionDir)\..\ExternalResources\glew-2.1.0\include\;$(SolutionDir)\..\ExternalResources\glfw-3.3.2\include\;$(SolutionDir)\..\ExternalResources\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\..\ExternalResources\glad\include\;$(SolutionDir)\..\ExternalResources\glm\;$(SolutionDir)\..\ExternalResources\x64-windows\include\;$(SolutionDir)\..\ExternalResources\glew-2.1.0\include\;$(SolutionDir)\..\ExternalResources\glfw-3.3.2\include\;$(SolutionDir)\..\ExternalResources\freetype\include;$(SolutionDir)\..\ExternalResources\imgui;$(SolutionDir)\..\ExternalResources\imgui\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>MaxSpeed</Optimization>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -150,6 +150,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\ExternalResources\imgui\backends\imgui_impl_opengl3.h" />
+    <ClInclude Include="..\..\ExternalResources\imgui\backends\imgui_impl_win32.h" />
+    <ClInclude Include="..\..\ExternalResources\imgui\imconfig.h" />
+    <ClInclude Include="..\..\ExternalResources\imgui\imgui.h" />
+    <ClInclude Include="..\..\ExternalResources\imgui\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="..\..\ExternalResources\imgui\imgui_internal.h" />
+    <ClInclude Include="..\..\ExternalResources\imgui\imstb_rectpack.h" />
+    <ClInclude Include="..\..\ExternalResources\imgui\imstb_textedit.h" />
+    <ClInclude Include="..\..\ExternalResources\imgui\imstb_truetype.h" />
     <ClInclude Include="Base\Animation.h" />
     <ClInclude Include="Base\Animator.h" />
     <ClInclude Include="Base\Billboard.h" />
@@ -160,6 +169,7 @@
     <ClInclude Include="Billboard2D.h" />
     <ClInclude Include="Billboard2DAnimation.h" />
     <ClInclude Include="CollitionBox.h" />
+    <ClInclude Include="CombatSystem.h" />
     <ClInclude Include="KDTree\CollitionDetection.h" />
     <ClInclude Include="Texto.h" />
     <ClInclude Include="Water.h" />
@@ -183,12 +193,20 @@
     <ClInclude Include="Base\wglext.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\ExternalResources\imgui\backends\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="..\..\ExternalResources\imgui\backends\imgui_impl_win32.cpp" />
+    <ClCompile Include="..\..\ExternalResources\imgui\imgui.cpp" />
+    <ClCompile Include="..\..\ExternalResources\imgui\imgui_demo.cpp" />
+    <ClCompile Include="..\..\ExternalResources\imgui\imgui_draw.cpp" />
+    <ClCompile Include="..\..\ExternalResources\imgui\imgui_tables.cpp" />
+    <ClCompile Include="..\..\ExternalResources\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Base\Animation.cpp" />
     <ClCompile Include="Base\Animator.cpp" />
     <ClCompile Include="Base\Billboard.cpp" />
     <ClCompile Include="Base\Bone.cpp" />
     <ClCompile Include="Base\font_atlas.cpp" />
     <ClCompile Include="CollitionBox.cpp" />
+    <ClCompile Include="CombatSystem.cpp" />
     <ClCompile Include="KDTree\CollitionDetection.cpp" />
     <ClCompile Include="DemoTemplateOGL.cpp" />
     <ClCompile Include="Base\glad.c" />

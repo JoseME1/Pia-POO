@@ -262,7 +262,7 @@ void Scenario::InitGraph(Model *main) {
 	ourModel.emplace_back(tacos);
 
 	//CARGAMOS EL ENEMIGOIDLE
-	Model* enemigo = new Model("models/Enemigo/enemigoIdle.fbx", main->cameraDetails);
+	Model* enemigo = new Model("models/Enemigo/enemigoanimado.fbx", main->cameraDetails);
 	escalaX = escalaY = escalaZ = 0.02f;
 	scale = glm::vec3(escalaX, escalaY, escalaZ);
 	posX = 60.0f;
@@ -273,9 +273,10 @@ void Scenario::InitGraph(Model *main) {
 	enemigo->setNextRotY(180);
 	enemigo->setTranslate(&translate);
 	enemigo->setNextTranslate(&translate);
+	enemigo->setModelType("Enemigo"); 
 	ourModel.emplace_back(enemigo);
 	try {
-		std::vector<Animation> animations = Animation::loadAllAnimations("models/Enemigo/enemigoIdle.fbx", enemigo->GetBoneInfoMap(), enemigo->getBonesInfo(), enemigo->GetBoneCount());
+		std::vector<Animation> animations = Animation::loadAllAnimations("models/Enemigo/enemigoanimado.fbx", enemigo->GetBoneInfoMap(), enemigo->getBonesInfo(), enemigo->GetBoneCount());
 		for (Animation animation : animations)
 			enemigo->setAnimator(Animator(animation));
 		enemigo->setAnimation(0);
